@@ -23,7 +23,6 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 
 .container{max-width:1200px;margin:auto;padding:16px}
 
-/* PLAYER */
 .player{
   display:none;
   position:relative;
@@ -35,13 +34,11 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .player video{
   width:100%;
   height:520px;
-  background:#000;
 }
 @media(max-width:768px){
   .player video{height:240px}
 }
 
-/* FULLSCREEN (CUSTOM) */
 #playerBox.fullscreen{
   position:fixed;
   inset:0;
@@ -51,45 +48,13 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   border-radius:0;
 }
 
-/* OPTIMASI FULLSCREEN PC + MOBILE */
-#playerBox.fullscreen video{
-  width:100vw;
-  height:100vh;
-  background:#000;
-}
-@media (orientation: landscape){
-  #playerBox.fullscreen video{object-fit:contain;}
-}
-@media (orientation: portrait){
-  #playerBox.fullscreen video{object-fit:cover;}
-}
-
-/* PLAY BUTTON */
-#centerPlay{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:72px;
-  color:#fff;
-  background:rgba(0,0,0,.25);
-  cursor:pointer;
-  z-index:8;
-}
-.player.playing #centerPlay{display:none}
-
-/* OVERLAY ADS */
 #adOverlay{
   position:absolute;
   inset:0;
-  z-index:5;
   display:none;
-  background:rgba(0,0,0,.15);
-  cursor:pointer;
+  z-index:5;
 }
 
-/* BANNER ADS */
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -98,19 +63,11 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   width:90%;
   max-width:600px;
   height:80px;
-  background:#000;
-  border-radius:12px;
-  overflow:hidden;
   display:none;
   z-index:6;
 }
-#adBanner img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+#adBanner img{width:100%;height:100%;object-fit:cover}
 
-/* FULLSCREEN BTN (CUSTOM) */
 #fullscreenBtn{
   position:absolute;
   top:10px;
@@ -124,26 +81,20 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   cursor:pointer;
 }
 
-/* VIDEO INFO */
 .video-info{display:none;margin-bottom:16px}
 .video-info h1{font-size:18px;margin:6px 0}
 
-/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
   gap:14px;
 }
 .card{
-  background:linear-gradient(145deg,#1a1a26,#11111b);
+  background:#15151d;
   border-radius:16px;
   cursor:pointer;
   overflow:hidden;
-  transition:.3s;
-  opacity:0;
 }
-.card.show{opacity:1}
-.card:hover{transform:translateY(-6px) scale(1.02)}
 .thumb{padding-top:56.25%;background:#000;position:relative}
 .thumb::after{
   content:"VIDEY";
@@ -157,17 +108,6 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 footer{text-align:center;padding:20px;color:#777;font-size:13px}
-
-/* ===== MATIKAN FULLSCREEN ASLI VIDEO (INI SAJA YANG DITAMBAH) ===== */
-video::-webkit-media-controls-fullscreen-button{
-  display:none !important;
-}
-video::-webkit-media-controls-picture-in-picture-button{
-  display:none !important;
-}
-video::-moz-media-controls-fullscreen-button{
-  display:none !important;
-}
 </style>
 </head>
 
@@ -183,10 +123,10 @@ video::-moz-media-controls-fullscreen-button{
 <div class="container">
 
 <div id="playerBox" class="player">
-  <video id="player" controls playsinline preload="metadata"></video>
-  <div id="centerPlay">▶</div>
+  <video id="player" controls playsinline preload="metadata"
+    controlsList="nofullscreen noremoteplayback nodownload"></video>
   <button id="fullscreenBtn">Fullscreen</button>
-  <a id="adBanner" href="#" target="_blank" rel="nofollow sponsored"></a>
+  <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
   <div id="adOverlay"></div>
 </div>
 
@@ -200,14 +140,12 @@ video::-moz-media-controls-fullscreen-button{
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-/* CONFIG */
 const API_JSON="https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
 const HOME_PER_PAGE=12;
 
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
-/* DOM */
 const list=document.getElementById("videos");
 const playerBox=document.getElementById("playerBox");
 const player=document.getElementById("player");
@@ -216,85 +154,28 @@ const videoTitle=document.getElementById("videoTitle");
 const adOverlay=document.getElementById("adOverlay");
 const adBanner=document.getElementById("adBanner");
 const fullscreenBtn=document.getElementById("fullscreenBtn");
-const centerPlay=document.getElementById("centerPlay");
 
-/* ADS SETUP */
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-/* FLAGS */
-let firstPlayAd=true;
-let cardClickAd=true;
-
-/* PLAY BUTTON */
-centerPlay.onclick=()=>{
-  if(firstPlayAd){
-    window.open(AD_LINK,"_blank");
-    firstPlayAd=false;
-  }
-  player.play();
-};
-
-/* OVERLAY ADS */
-let overlayTimer=null;
-function showOverlay(){
-  adOverlay.style.display="block";
-  adOverlay.onclick=()=>{
-    window.open(AD_LINK,"_blank");
-    adOverlay.style.display="none";
-    clearTimeout(overlayTimer);
-    overlayTimer=setTimeout(showOverlay,25000);
-  };
-}
-player.addEventListener("play",()=>{
-  clearTimeout(overlayTimer);
-  overlayTimer=setTimeout(showOverlay,25000);
-});
-
-/* BANNER ADS */
-let bannerTimer=null;
-function showBanner(){
-  adBanner.style.display="block";
-  adBanner.onclick=(e)=>{
-    e.stopPropagation();
-    window.open(AD_LINK,"_blank");
-    adBanner.style.display="none";
-    clearTimeout(bannerTimer);
-    bannerTimer=setTimeout(showBanner,30000);
-  };
-}
-player.addEventListener("play",()=>{
-  clearTimeout(bannerTimer);
-  bannerTimer=setTimeout(showBanner,30000);
-});
-
-/* UI STATE */
-player.addEventListener("play",()=>playerBox.classList.add("playing"));
-player.addEventListener("pause",()=>playerBox.classList.remove("playing"));
-
-/* FULLSCREEN CUSTOM */
-fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
+let VIDEOS=[];
 
 /* ROUTER */
-let VIDEOS=[];
 function getVideoId(){
   const m=location.hash.match(/^#\/e\/([\w]+)/);
   return m?m[1]:null;
 }
 function handleRoute(){
   const id=getVideoId();
-  if(!id){
-    playerBox.style.display="none";
-    videoInfo.style.display="none";
-    return;
-  }
+  if(!id)return;
+
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v)return;
+
   player.src=`https://cdn.videy.co/${id}.mp4`;
   playerBox.style.display="block";
   videoInfo.style.display="block";
   videoTitle.textContent=v.title;
-  firstPlayAd=true;
 }
 
 /* LOAD */
@@ -302,21 +183,23 @@ fetch(API_JSON)
 .then(r=>r.json())
 .then(j=>{
   VIDEOS=j.videos;
+
+  /* 🔀 RANDOM CARD BALIK */
+  VIDEOS.sort(()=>Math.random()-0.5);
+
   VIDEOS.slice(0,HOME_PER_PAGE).forEach(v=>{
     const c=document.createElement("div");
-    c.className="card show";
-    c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
-    c.onclick=()=>{
-      if(cardClickAd){
-        window.open(AD_LINK,"_blank");
-        cardClickAd=false;
-        setTimeout(()=>cardClickAd=true,1000);
-      }
-      location.hash=`/e/${v.embed}`;
-    };
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div>
+      <div class="info"><p class="title">${v.title}</p></div>`;
+    c.onclick=()=>location.hash=`/e/${v.embed}`;
     list.appendChild(c);
   });
+
+  /* 🔥 INI KUNCI FIX DIRECT LINK */
+  handleRoute();
 });
+
 window.addEventListener("hashchange",handleRoute);
 </script>
 
