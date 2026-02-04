@@ -41,7 +41,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   .player video{height:240px}
 }
 
-/* FULLSCREEN */
+/* FULLSCREEN (CUSTOM) */
 #playerBox.fullscreen{
   position:fixed;
   inset:0;
@@ -49,6 +49,19 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   height:100vh;
   z-index:9999;
   border-radius:0;
+}
+
+/* OPTIMASI FULLSCREEN PC + MOBILE */
+#playerBox.fullscreen video{
+  width:100vw;
+  height:100vh;
+  background:#000;
+}
+@media (orientation: landscape){
+  #playerBox.fullscreen video{object-fit:contain;}
+}
+@media (orientation: portrait){
+  #playerBox.fullscreen video{object-fit:cover;}
 }
 
 /* PLAY BUTTON */
@@ -97,7 +110,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   object-fit:cover;
 }
 
-/* FULLSCREEN BTN */
+/* FULLSCREEN BTN (CUSTOM) */
 #fullscreenBtn{
   position:absolute;
   top:10px;
@@ -144,6 +157,17 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 footer{text-align:center;padding:20px;color:#777;font-size:13px}
+
+/* ===== MATIKAN FULLSCREEN ASLI VIDEO (INI SAJA YANG DITAMBAH) ===== */
+video::-webkit-media-controls-fullscreen-button{
+  display:none !important;
+}
+video::-webkit-media-controls-picture-in-picture-button{
+  display:none !important;
+}
+video::-moz-media-controls-fullscreen-button{
+  display:none !important;
+}
 </style>
 </head>
 
@@ -177,36 +201,36 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
 
 <script>
 /* CONFIG */
-const API_JSON = "https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
-const HOME_PER_PAGE = 12;
+const API_JSON="https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
+const HOME_PER_PAGE=12;
 
-const AD_LINK = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
-const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
+const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
+const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
 /* DOM */
-const list = document.getElementById("videos");
-const playerBox = document.getElementById("playerBox");
-const player = document.getElementById("player");
-const videoInfo = document.getElementById("videoInfo");
-const videoTitle = document.getElementById("videoTitle");
-const adOverlay = document.getElementById("adOverlay");
-const adBanner = document.getElementById("adBanner");
-const fullscreenBtn = document.getElementById("fullscreenBtn");
-const centerPlay = document.getElementById("centerPlay");
+const list=document.getElementById("videos");
+const playerBox=document.getElementById("playerBox");
+const player=document.getElementById("player");
+const videoInfo=document.getElementById("videoInfo");
+const videoTitle=document.getElementById("videoTitle");
+const adOverlay=document.getElementById("adOverlay");
+const adBanner=document.getElementById("adBanner");
+const fullscreenBtn=document.getElementById("fullscreenBtn");
+const centerPlay=document.getElementById("centerPlay");
 
 /* ADS SETUP */
-adBanner.href = AD_LINK;
-adBanner.innerHTML = `<img src="${BANNER_IMG}">`;
+adBanner.href=AD_LINK;
+adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-/* FLAG IKLAN */
-let firstPlayAd = true;
-let cardClickAd = true;
+/* FLAGS */
+let firstPlayAd=true;
+let cardClickAd=true;
 
-/* PLAY BUTTON (IKLAN 1x) */
-centerPlay.onclick = () => {
+/* PLAY BUTTON */
+centerPlay.onclick=()=>{
   if(firstPlayAd){
     window.open(AD_LINK,"_blank");
-    firstPlayAd = false;
+    firstPlayAd=false;
   }
   player.play();
 };
@@ -248,7 +272,7 @@ player.addEventListener("play",()=>{
 player.addEventListener("play",()=>playerBox.classList.add("playing"));
 player.addEventListener("pause",()=>playerBox.classList.remove("playing"));
 
-/* FULLSCREEN */
+/* FULLSCREEN CUSTOM */
 fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
 
 /* ROUTER */
@@ -270,7 +294,7 @@ function handleRoute(){
   playerBox.style.display="block";
   videoInfo.style.display="block";
   videoTitle.textContent=v.title;
-  firstPlayAd = true;
+  firstPlayAd=true;
 }
 
 /* LOAD */
@@ -293,7 +317,6 @@ fetch(API_JSON)
     list.appendChild(c);
   });
 });
-
 window.addEventListener("hashchange",handleRoute);
 </script>
 
