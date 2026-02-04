@@ -23,6 +23,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 
 .container{max-width:1200px;margin:auto;padding:16px}
 
+/* PLAYER */
 .player{
   display:none;
   position:relative;
@@ -39,6 +40,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   .player video{height:240px}
 }
 
+/* FULLSCREEN */
 #playerBox.fullscreen{
   position:fixed;
   inset:0;
@@ -47,14 +49,38 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   z-index:9999;
   border-radius:0;
 }
+#playerBox.fullscreen video{
+  width:100vw;
+  height:100vh;
+}
+@media (orientation: landscape){
+  #playerBox.fullscreen video{object-fit:contain;}
+}
+@media (orientation: portrait){
+  #playerBox.fullscreen video{object-fit:cover;}
+}
 
+/* PLAY BTN */
+#centerPlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:72px;
+  background:rgba(0,0,0,.25);
+  cursor:pointer;
+  z-index:8;
+}
+.player.playing #centerPlay{display:none}
+
+/* ADS */
 #adOverlay{
   position:absolute;
   inset:0;
   display:none;
   z-index:5;
 }
-
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -63,6 +89,8 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   width:90%;
   max-width:600px;
   height:80px;
+  border-radius:12px;
+  overflow:hidden;
   display:none;
   z-index:6;
 }
@@ -84,13 +112,14 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .video-info{display:none;margin-bottom:16px}
 .video-info h1{font-size:18px;margin:6px 0}
 
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
   gap:14px;
 }
 .card{
-  background:#15151d;
+  background:linear-gradient(145deg,#1a1a26,#11111b);
   border-radius:16px;
   cursor:pointer;
   overflow:hidden;
@@ -108,6 +137,9 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 footer{text-align:center;padding:20px;color:#777;font-size:13px}
+
+video::-webkit-media-controls-fullscreen-button{display:none!important;}
+video::-webkit-media-controls-picture-in-picture-button{display:none!important;}
 </style>
 </head>
 
@@ -123,8 +155,8 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
 <div class="container">
 
 <div id="playerBox" class="player">
-  <video id="player" controls playsinline preload="metadata"
-    controlsList="nofullscreen noremoteplayback nodownload"></video>
+  <video id="player" controls playsinline preload="metadata"></video>
+  <div id="centerPlay">▶</div>
   <button id="fullscreenBtn">Fullscreen</button>
   <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
   <div id="adOverlay"></div>
@@ -141,8 +173,6 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
 
 <script>
 const API_JSON="https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
-const HOME_PER_PAGE=12;
-
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
@@ -154,23 +184,28 @@ const videoTitle=document.getElementById("videoTitle");
 const adOverlay=document.getElementById("adOverlay");
 const adBanner=document.getElementById("adBanner");
 const fullscreenBtn=document.getElementById("fullscreenBtn");
+const centerPlay=document.getElementById("centerPlay");
 
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
 let VIDEOS=[];
 
-/* ROUTER */
+/* ROUTER FIX */
 function getVideoId(){
   const m=location.hash.match(/^#\/e\/([\w]+)/);
   return m?m[1]:null;
 }
+
 function handleRoute(){
   const id=getVideoId();
-  if(!id)return;
-
+  if(!id){
+    playerBox.style.display="none";
+    videoInfo.style.display="none";
+    return;
+  }
   const v=VIDEOS.find(x=>x.embed===id);
-  if(!v)return;
+  if(!v) return;
 
   player.src=`https://cdn.videy.co/${id}.mp4`;
   playerBox.style.display="block";
@@ -178,29 +213,27 @@ function handleRoute(){
   videoTitle.textContent=v.title;
 }
 
-/* LOAD */
+/* LOAD DATA */
 fetch(API_JSON)
 .then(r=>r.json())
 .then(j=>{
   VIDEOS=j.videos;
 
-  /* 🔀 RANDOM CARD BALIK */
-  VIDEOS.sort(()=>Math.random()-0.5);
-
-  VIDEOS.slice(0,HOME_PER_PAGE).forEach(v=>{
+  VIDEOS.slice(0,12).forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
-    c.innerHTML=`<div class="thumb"></div>
-      <div class="info"><p class="title">${v.title}</p></div>`;
+    c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
     c.onclick=()=>location.hash=`/e/${v.embed}`;
     list.appendChild(c);
   });
 
-  /* 🔥 INI KUNCI FIX DIRECT LINK */
+  // 🔥 INI YANG MEMPERBAIKI DIRECT LINK
   handleRoute();
 });
 
 window.addEventListener("hashchange",handleRoute);
+fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
+centerPlay.onclick=()=>player.play();
 </script>
 
 </body>
