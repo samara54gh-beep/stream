@@ -178,8 +178,8 @@ const STREAM_RECOMMEND = 6;
 
 const AD_LINK = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
-const BANNER_DELAY = 30000;
-const OVERLAY_INTERVAL = 25000; // opsional untuk highlight, tapi overlay tetap tampil
+const BANNER_DELAY = 30000; // 30 detik
+const BANNER_SHOW_DURATION = 8000; // banner tampil 8 detik
 
 /* ================= VAR ================= */
 let VIDEOS = [];
@@ -204,26 +204,27 @@ function fireOverlayAd(){
   window.open(AD_LINK, "_blank");
 }
 
-// overlay selalu tampil, tidak auto-hide
+// overlay selalu tampil
 adOverlay.style.display = "block";
+adOverlay.onclick = fireOverlayAd;
 
 /* ================= BANNER LOGIC ================= */
+function showBanner(){
+  adBanner.style.display = "block";
+  setTimeout(()=> adBanner.style.display="none", BANNER_SHOW_DURATION);
+}
+
 function startBanner(){
   if(bannerTimer) return; // hanya 1 timer
-  adBanner.style.display="none"; // reset
-
-  bannerTimer = setInterval(()=>{
-    adBanner.style.display="block";
-  }, BANNER_DELAY);
+  showBanner(); // tampil pertama kali
+  bannerTimer = setInterval(showBanner, BANNER_DELAY);
 }
 
 adBanner.onclick = (e)=>{
   e.stopPropagation();
   window.open(AD_LINK,"_blank");
-  adBanner.style.display="none";
+  adBanner.style.display="none"; // klik hilang
 };
-
-adOverlay.onclick = ()=> fireOverlayAd();
 
 /* ================= RENDER CARD ================= */
 function renderCard(v){
@@ -287,7 +288,7 @@ fetch(API_JSON)
   VIDEOS = j.videos;
   renderCardsWithDelay(VIDEOS.slice(0, HOME_PER_PAGE), 150);
 
-  // start banner timer saja
+  // start banner timer
   startBanner();
 });
 
