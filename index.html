@@ -8,6 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
 
 <style>
+/* =========================
+   GLOBAL THEME VARIABLES
+========================= */
 :root{
   --bg:#0b0b0f;
   --card:#15151d;
@@ -15,17 +18,41 @@
   --text:#fff;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui;
+}
 
+/* =========================
+   HEADER
+========================= */
 header{background:#000;border-bottom:1px solid #1f1f2a}
-.header-inner{max-width:1200px;margin:auto;padding:14px 20px;display:flex;justify-content:space-between}
-.logo{font-size:22px;font-weight:700;color:var(--accent);text-decoration:none}
+.header-inner{
+  max-width:1200px;
+  margin:auto;
+  padding:14px 20px;
+  display:flex;
+  justify-content:space-between
+}
+.logo{
+  font-size:22px;
+  font-weight:700;
+  color:var(--accent);
+  text-decoration:none
+}
 
+/* =========================
+   LAYOUT
+========================= */
 .container{max-width:1200px;margin:auto;padding:16px}
 
-/* PLAYER */
+/* =========================
+   VIDEO PLAYER
+========================= */
 .player{
-  display:none;
+  display:none;           /* disembunyikan sampai route /#/e/ID */
   position:relative;
   background:#000;
   border-radius:16px;
@@ -41,7 +68,9 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   .player video{height:240px}
 }
 
-/* FULLSCREEN (CUSTOM) */
+/* =========================
+   CUSTOM FULLSCREEN
+========================= */
 #playerBox.fullscreen{
   position:fixed;
   inset:0;
@@ -50,12 +79,9 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   z-index:9999;
   border-radius:0;
 }
-
-/* OPTIMASI FULLSCREEN PC + MOBILE */
 #playerBox.fullscreen video{
   width:100vw;
   height:100vh;
-  background:#000;
 }
 @media (orientation: landscape){
   #playerBox.fullscreen video{object-fit:contain;}
@@ -64,7 +90,9 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   #playerBox.fullscreen video{object-fit:cover;}
 }
 
-/* PLAY BUTTON */
+/* =========================
+   CENTER PLAY BUTTON
+========================= */
 #centerPlay{
   position:absolute;
   inset:0;
@@ -72,14 +100,16 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   align-items:center;
   justify-content:center;
   font-size:72px;
-  color:#fff;
   background:rgba(0,0,0,.25);
   cursor:pointer;
   z-index:8;
 }
+/* hilang saat video play */
 .player.playing #centerPlay{display:none}
 
-/* OVERLAY ADS */
+/* =========================
+   ADS OVERLAY
+========================= */
 #adOverlay{
   position:absolute;
   inset:0;
@@ -89,7 +119,9 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   cursor:pointer;
 }
 
-/* BANNER ADS */
+/* =========================
+   ADS BANNER
+========================= */
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -104,13 +136,11 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   display:none;
   z-index:6;
 }
-#adBanner img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+#adBanner img{width:100%;height:100%;object-fit:cover}
 
-/* FULLSCREEN BTN (CUSTOM) */
+/* =========================
+   FULLSCREEN BUTTON
+========================= */
 #fullscreenBtn{
   position:absolute;
   top:10px;
@@ -124,11 +154,15 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   cursor:pointer;
 }
 
-/* VIDEO INFO */
+/* =========================
+   VIDEO INFO
+========================= */
 .video-info{display:none;margin-bottom:16px}
 .video-info h1{font-size:18px;margin:6px 0}
 
-/* GRID */
+/* =========================
+   VIDEO GRID
+========================= */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
@@ -158,7 +192,9 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 
 footer{text-align:center;padding:20px;color:#777;font-size:13px}
 
-/* MATIKAN FULLSCREEN ASLI */
+/* =========================
+   MATIKAN FULLSCREEN ASLI VIDEO
+========================= */
 video::-webkit-media-controls-fullscreen-button{display:none!important;}
 video::-webkit-media-controls-picture-in-picture-button{display:none!important;}
 video::-moz-media-controls-fullscreen-button{display:none!important;}
@@ -169,7 +205,7 @@ video::-moz-media-controls-fullscreen-button{display:none!important;}
 
 <header>
   <div class="header-inner">
-    <!-- 🔥 SATU-SATUNYA PERUBAHAN DI SINI -->
+    <!-- klik logo → homepage "/" (reload sekali, sesuai keputusan) -->
     <a href="/" class="logo">VIDEY</a>
     <span style="font-size:13px;color:#aaa">Video Streaming</span>
   </div>
@@ -195,14 +231,19 @@ video::-moz-media-controls-fullscreen-button{display:none!important;}
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-/* CONFIG */
+/* =========================
+   CONFIG
+========================= */
 const API_JSON="https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
 const HOME_PER_PAGE=12;
 
+// link iklan utama
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
-/* DOM */
+/* =========================
+   DOM ELEMENTS
+========================= */
 const list=document.getElementById("videos");
 const playerBox=document.getElementById("playerBox");
 const player=document.getElementById("player");
@@ -213,15 +254,21 @@ const adBanner=document.getElementById("adBanner");
 const fullscreenBtn=document.getElementById("fullscreenBtn");
 const centerPlay=document.getElementById("centerPlay");
 
-/* ADS SETUP */
+/* =========================
+   ADS SETUP
+========================= */
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-/* FLAGS */
-let firstPlayAd=true;
-let cardClickAd=true;
+/* =========================
+   FLAGS (ANTI SPAM)
+========================= */
+let firstPlayAd=true;   // iklan saat play pertama
+let cardClickAd=true;  // iklan saat klik card
 
-/* PLAY BUTTON */
+/* =========================
+   PLAY BUTTON
+========================= */
 centerPlay.onclick=()=>{
   if(firstPlayAd){
     window.open(AD_LINK,"_blank");
@@ -230,7 +277,9 @@ centerPlay.onclick=()=>{
   player.play();
 };
 
-/* OVERLAY ADS */
+/* =========================
+   OVERLAY ADS (TIAP 25 DETIK)
+========================= */
 let overlayTimer=null;
 function showOverlay(){
   adOverlay.style.display="block";
@@ -246,7 +295,9 @@ player.addEventListener("play",()=>{
   overlayTimer=setTimeout(showOverlay,25000);
 });
 
-/* BANNER ADS */
+/* =========================
+   BANNER ADS (TIAP 30 DETIK)
+========================= */
 let bannerTimer=null;
 function showBanner(){
   adBanner.style.display="block";
@@ -263,40 +314,59 @@ player.addEventListener("play",()=>{
   bannerTimer=setTimeout(showBanner,30000);
 });
 
-/* UI STATE */
+/* =========================
+   PLAYER UI STATE
+========================= */
 player.addEventListener("play",()=>playerBox.classList.add("playing"));
 player.addEventListener("pause",()=>playerBox.classList.remove("playing"));
 
-/* FULLSCREEN CUSTOM */
+/* =========================
+   CUSTOM FULLSCREEN
+========================= */
 fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
 
-/* ROUTER */
+/* =========================
+   HASH ROUTER
+========================= */
 let VIDEOS=[];
+
+// ambil ID dari URL: /#/e/VIDEOID
 function getVideoId(){
   const m=location.hash.match(/^#\/e\/([\w]+)/);
   return m?m[1]:null;
 }
+
+// controller halaman
 function handleRoute(){
   const id=getVideoId();
+
+  // homepage (tidak ada ID)
   if(!id){
     playerBox.style.display="none";
     videoInfo.style.display="none";
     return;
   }
+
+  // halaman stream
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v)return;
+
   player.src=`https://cdn.videy.co/${id}.mp4`;
   playerBox.style.display="block";
   videoInfo.style.display="block";
   videoTitle.textContent=v.title;
-  firstPlayAd=true;
+  firstPlayAd=true; // reset iklan play
 }
 
-/* LOAD */
+/* =========================
+   LOAD VIDEO LIST
+========================= */
 fetch(API_JSON)
 .then(r=>r.json())
 .then(j=>{
   VIDEOS=j.videos;
+
+  // render card homepage
   VIDEOS.slice(0,HOME_PER_PAGE).forEach(v=>{
     const c=document.createElement("div");
     c.className="card show";
@@ -312,8 +382,11 @@ fetch(API_JSON)
     list.appendChild(c);
   });
 
+  // penting: handle direct link /#/e/ID
   handleRoute();
 });
+
+// dengarkan perubahan hash
 window.addEventListener("hashchange",handleRoute);
 </script>
 
