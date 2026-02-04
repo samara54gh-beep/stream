@@ -51,6 +51,21 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   border-radius:0;
 }
 
+/* PLAY BUTTON */
+#centerPlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:72px;
+  color:#fff;
+  background:rgba(0,0,0,.25);
+  cursor:pointer;
+  z-index:8;
+}
+.player.playing #centerPlay{display:none}
+
 /* OVERLAY ADS */
 #adOverlay{
   position:absolute;
@@ -145,6 +160,7 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
 
 <div id="playerBox" class="player">
   <video id="player" controls playsinline preload="metadata"></video>
+  <div id="centerPlay">▶</div>
   <button id="fullscreenBtn">Fullscreen</button>
   <a id="adBanner" href="#" target="_blank" rel="nofollow sponsored"></a>
   <div id="adOverlay"></div>
@@ -163,7 +179,6 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
 /* CONFIG */
 const API_JSON = "https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
 const HOME_PER_PAGE = 12;
-const STREAM_RECOMMEND = 6;
 
 const AD_LINK = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
@@ -177,29 +192,43 @@ const videoTitle = document.getElementById("videoTitle");
 const adOverlay = document.getElementById("adOverlay");
 const adBanner = document.getElementById("adBanner");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
+const centerPlay = document.getElementById("centerPlay");
 
 /* ADS SETUP */
 adBanner.href = AD_LINK;
 adBanner.innerHTML = `<img src="${BANNER_IMG}">`;
 
-/* OVERLAY 25s (NO STACK) */
-let overlayTimer = null;
-function showOverlay(){
-  adOverlay.style.display = "block";
-  adOverlay.onclick = () => {
+/* FLAG IKLAN */
+let firstPlayAd = true;
+let cardClickAd = true;
+
+/* PLAY BUTTON (IKLAN 1x) */
+centerPlay.onclick = () => {
+  if(firstPlayAd){
     window.open(AD_LINK,"_blank");
-    adOverlay.style.display = "none";
+    firstPlayAd = false;
+  }
+  player.play();
+};
+
+/* OVERLAY ADS */
+let overlayTimer=null;
+function showOverlay(){
+  adOverlay.style.display="block";
+  adOverlay.onclick=()=>{
+    window.open(AD_LINK,"_blank");
+    adOverlay.style.display="none";
     clearTimeout(overlayTimer);
-    overlayTimer = setTimeout(showOverlay,25000);
+    overlayTimer=setTimeout(showOverlay,25000);
   };
 }
 player.addEventListener("play",()=>{
   clearTimeout(overlayTimer);
-  overlayTimer = setTimeout(showOverlay,25000);
+  overlayTimer=setTimeout(showOverlay,25000);
 });
 
-/* BANNER 30s (NO STACK) */
-let bannerTimer = null;
+/* BANNER ADS */
+let bannerTimer=null;
 function showBanner(){
   adBanner.style.display="block";
   adBanner.onclick=(e)=>{
@@ -214,6 +243,10 @@ player.addEventListener("play",()=>{
   clearTimeout(bannerTimer);
   bannerTimer=setTimeout(showBanner,30000);
 });
+
+/* UI STATE */
+player.addEventListener("play",()=>playerBox.classList.add("playing"));
+player.addEventListener("pause",()=>playerBox.classList.remove("playing"));
 
 /* FULLSCREEN */
 fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
@@ -237,6 +270,7 @@ function handleRoute(){
   playerBox.style.display="block";
   videoInfo.style.display="block";
   videoTitle.textContent=v.title;
+  firstPlayAd = true;
 }
 
 /* LOAD */
@@ -248,7 +282,14 @@ fetch(API_JSON)
     const c=document.createElement("div");
     c.className="card show";
     c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
-    c.onclick=()=>location.hash=`/e/${v.embed}`;
+    c.onclick=()=>{
+      if(cardClickAd){
+        window.open(AD_LINK,"_blank");
+        cardClickAd=false;
+        setTimeout(()=>cardClickAd=true,1000);
+      }
+      location.hash=`/e/${v.embed}`;
+    };
     list.appendChild(c);
   });
 });
