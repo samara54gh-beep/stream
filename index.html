@@ -58,7 +58,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   inset:0;
   cursor:pointer;
   z-index:5;
-  display:none;
+  display:block; /* selalu tampil */
   background:rgba(0,0,0,0.1);
 }
 
@@ -179,8 +179,7 @@ const STREAM_RECOMMEND = 6;
 const AD_LINK = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 const BANNER_DELAY = 30000;
-const OVERLAY_INTERVAL = 25000;
-const OVERLAY_DURATION = 5000;
+const OVERLAY_INTERVAL = 25000; // opsional untuk highlight, tapi overlay tetap tampil
 
 /* ================= VAR ================= */
 let VIDEOS = [];
@@ -205,18 +204,14 @@ function fireOverlayAd(){
   window.open(AD_LINK, "_blank");
 }
 
-// overlay loop tiap 25 detik
-function startOverlayLoop(){
-  adOverlay.style.display = "block";
-  setTimeout(()=>{
-    adOverlay.style.display = "none";
-    setTimeout(startOverlayLoop, OVERLAY_INTERVAL);
-  }, OVERLAY_DURATION);
-}
+// overlay selalu tampil, tidak auto-hide
+adOverlay.style.display = "block";
 
 /* ================= BANNER LOGIC ================= */
 function startBanner(){
-  clearInterval(bannerTimer);
+  if(bannerTimer) return; // hanya 1 timer
+  adBanner.style.display="none"; // reset
+
   bannerTimer = setInterval(()=>{
     adBanner.style.display="block";
   }, BANNER_DELAY);
@@ -230,7 +225,7 @@ adBanner.onclick = (e)=>{
 
 adOverlay.onclick = ()=> fireOverlayAd();
 
-/* ================= RENDER CARD DENGAN DELAY ================= */
+/* ================= RENDER CARD ================= */
 function renderCard(v){
   const card = document.createElement("div");
   card.className="card";
@@ -248,18 +243,12 @@ function renderCard(v){
 
 function renderCardsWithDelay(videos, delay = 150){
   list.innerHTML = "";
-  videos.forEach((v,i)=>{
-    setTimeout(()=> renderCard(v), i*delay);
-  });
+  videos.forEach((v,i)=> setTimeout(()=> renderCard(v), i*delay));
 }
 
 /* ================= CUSTOM FULLSCREEN ================= */
 fullscreenBtn.onclick = ()=>{
-  if(!playerBox.classList.contains("fullscreen")){
-    playerBox.classList.add("fullscreen");
-  } else {
-    playerBox.classList.remove("fullscreen");
-  }
+  playerBox.classList.toggle("fullscreen");
 }
 
 /* ================= ROUTER ================= */
@@ -289,9 +278,6 @@ function handleRoute(){
   videoTitle.textContent = video.title;
 
   renderCardsWithDelay(VIDEOS.filter(v=>v.embed!==id).slice(0, STREAM_RECOMMEND), 200);
-
-  startOverlayLoop();
-  startBanner();
 }
 
 /* ================= LOAD ================= */
@@ -300,6 +286,9 @@ fetch(API_JSON)
 .then(j=>{
   VIDEOS = j.videos;
   renderCardsWithDelay(VIDEOS.slice(0, HOME_PER_PAGE), 150);
+
+  // start banner timer saja
+  startBanner();
 });
 
 /* ================= EVENTS ================= */
