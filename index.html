@@ -23,7 +23,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 
 .container{max-width:1200px;margin:auto;padding:16px}
 
-/* ===== PLAYER ===== */
+/* PLAYER */
 .player{
   display:none;
   position:relative;
@@ -41,28 +41,27 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   .player video{height:240px}
 }
 
-/* ===== CUSTOM FULLSCREEN ===== */
+/* FULLSCREEN */
 #playerBox.fullscreen{
   position:fixed;
-  top:0;
-  left:0;
+  inset:0;
   width:100vw;
   height:100vh;
   z-index:9999;
   border-radius:0;
 }
 
-/* ===== ADS OVERLAY ===== */
+/* OVERLAY ADS */
 #adOverlay{
   position:absolute;
   inset:0;
-  cursor:pointer;
   z-index:5;
-  display:block; /* selalu tampil */
-  background:rgba(0,0,0,0.1);
+  display:none;
+  background:rgba(0,0,0,.15);
+  cursor:pointer;
 }
 
-/* ===== BANNER ADS ===== */
+/* BANNER ADS */
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -83,7 +82,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   object-fit:cover;
 }
 
-/* ===== FULLSCREEN BUTTON ===== */
+/* FULLSCREEN BTN */
 #fullscreenBtn{
   position:absolute;
   top:10px;
@@ -97,11 +96,11 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   cursor:pointer;
 }
 
-/* ===== VIDEO INFO ===== */
+/* VIDEO INFO */
 .video-info{display:none;margin-bottom:16px}
 .video-info h1{font-size:18px;margin:6px 0}
 
-/* ===== GRID ===== */
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
@@ -115,10 +114,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   transition:.3s;
   opacity:0;
 }
-.card.show{
-  opacity:1;
-  transition:opacity 0.4s, transform 0.3s;
-}
+.card.show{opacity:1}
 .card:hover{transform:translateY(-6px) scale(1.02)}
 .thumb{padding-top:56.25%;background:#000;position:relative}
 .thumb::after{
@@ -147,45 +143,32 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
 
 <div class="container">
 
-  <!-- ===== PLAYER ===== -->
-  <div id="playerBox" class="player">
-    <video id="player" controls playsinline preload="metadata"></video>
+<div id="playerBox" class="player">
+  <video id="player" controls playsinline preload="metadata"></video>
+  <button id="fullscreenBtn">Fullscreen</button>
+  <a id="adBanner" href="#" target="_blank" rel="nofollow sponsored"></a>
+  <div id="adOverlay"></div>
+</div>
 
-    <!-- FULLSCREEN BUTTON -->
-    <button id="fullscreenBtn">Fullscreen</button>
+<div id="videoInfo" class="video-info">
+  <h1 id="videoTitle"></h1>
+</div>
 
-    <!-- 🔥 BANNER IKLAN -->
-    <a id="adBanner" href="#" target="_blank" rel="nofollow sponsored"></a>
-
-    <!-- ADS OVERLAY -->
-    <div id="adOverlay"></div>
-  </div>
-
-  <div id="videoInfo" class="video-info">
-    <h1 id="videoTitle"></h1>
-  </div>
-
-  <div id="videos" class="grid"></div>
+<div id="videos" class="grid"></div>
 </div>
 
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-/* ================= CONFIG ================= */
+/* CONFIG */
 const API_JSON = "https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
 const HOME_PER_PAGE = 12;
 const STREAM_RECOMMEND = 6;
 
 const AD_LINK = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
-const BANNER_DELAY = 30000; // 30 detik
-const BANNER_SHOW_DURATION = 8000; // banner tampil 8 detik
 
-/* ================= VAR ================= */
-let VIDEOS = [];
-let bannerTimer = null;
-
-/* ================= DOM ================= */
+/* DOM */
 const list = document.getElementById("videos");
 const playerBox = document.getElementById("playerBox");
 const player = document.getElementById("player");
@@ -195,104 +178,81 @@ const adOverlay = document.getElementById("adOverlay");
 const adBanner = document.getElementById("adBanner");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 
-/* ================= SETUP BANNER ================= */
+/* ADS SETUP */
 adBanner.href = AD_LINK;
-adBanner.innerHTML = `<img src="${BANNER_IMG}" alt="Advertisement">`;
+adBanner.innerHTML = `<img src="${BANNER_IMG}">`;
 
-/* ================= ADS OVERLAY ================= */
-function fireOverlayAd(){
-  window.open(AD_LINK, "_blank");
-}
-
-// overlay selalu tampil
-adOverlay.style.display = "block";
-adOverlay.onclick = fireOverlayAd;
-
-/* ================= BANNER LOGIC ================= */
-function showBanner(){
-  adBanner.style.display = "block";
-  setTimeout(()=> adBanner.style.display="none", BANNER_SHOW_DURATION);
-}
-
-function startBanner(){
-  if(bannerTimer) return; // hanya 1 timer
-  showBanner(); // tampil pertama kali
-  bannerTimer = setInterval(showBanner, BANNER_DELAY);
-}
-
-adBanner.onclick = (e)=>{
-  e.stopPropagation();
-  window.open(AD_LINK,"_blank");
-  adBanner.style.display="none"; // klik hilang
-};
-
-/* ================= RENDER CARD ================= */
-function renderCard(v){
-  const card = document.createElement("div");
-  card.className="card";
-  card.innerHTML=`
-    <div class="thumb"></div>
-    <div class="info"><p class="title">${v.title}</p></div>
-  `;
-  card.onclick=()=>{
-    fireOverlayAd();
-    location.hash=`/e/${v.embed}`;
+/* OVERLAY 25s (NO STACK) */
+let overlayTimer = null;
+function showOverlay(){
+  adOverlay.style.display = "block";
+  adOverlay.onclick = () => {
+    window.open(AD_LINK,"_blank");
+    adOverlay.style.display = "none";
+    clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(showOverlay,25000);
   };
-  list.appendChild(card);
-  setTimeout(()=>card.classList.add("show"), 50);
 }
+player.addEventListener("play",()=>{
+  clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(showOverlay,25000);
+});
 
-function renderCardsWithDelay(videos, delay = 150){
-  list.innerHTML = "";
-  videos.forEach((v,i)=> setTimeout(()=> renderCard(v), i*delay));
+/* BANNER 30s (NO STACK) */
+let bannerTimer = null;
+function showBanner(){
+  adBanner.style.display="block";
+  adBanner.onclick=(e)=>{
+    e.stopPropagation();
+    window.open(AD_LINK,"_blank");
+    adBanner.style.display="none";
+    clearTimeout(bannerTimer);
+    bannerTimer=setTimeout(showBanner,30000);
+  };
 }
+player.addEventListener("play",()=>{
+  clearTimeout(bannerTimer);
+  bannerTimer=setTimeout(showBanner,30000);
+});
 
-/* ================= CUSTOM FULLSCREEN ================= */
-fullscreenBtn.onclick = ()=>{
-  playerBox.classList.toggle("fullscreen");
-}
+/* FULLSCREEN */
+fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
 
-/* ================= ROUTER ================= */
+/* ROUTER */
+let VIDEOS=[];
 function getVideoId(){
-  const m = location.hash.match(/^#\/e\/([\w]+)/);
-  return m ? m[1] : null;
+  const m=location.hash.match(/^#\/e\/([\w]+)/);
+  return m?m[1]:null;
 }
-
 function handleRoute(){
-  const id = getVideoId();
+  const id=getVideoId();
   if(!id){
     playerBox.style.display="none";
     videoInfo.style.display="none";
     return;
   }
-
-  const video = VIDEOS.find(v=>v.embed===id);
-  if(!video){
-    location.hash="#/";
-    return;
-  }
-
-  player.src = `https://cdn.videy.co/${id}.mp4`;
+  const v=VIDEOS.find(x=>x.embed===id);
+  if(!v)return;
+  player.src=`https://cdn.videy.co/${id}.mp4`;
   playerBox.style.display="block";
   videoInfo.style.display="block";
-
-  videoTitle.textContent = video.title;
-
-  renderCardsWithDelay(VIDEOS.filter(v=>v.embed!==id).slice(0, STREAM_RECOMMEND), 200);
+  videoTitle.textContent=v.title;
 }
 
-/* ================= LOAD ================= */
+/* LOAD */
 fetch(API_JSON)
 .then(r=>r.json())
 .then(j=>{
-  VIDEOS = j.videos;
-  renderCardsWithDelay(VIDEOS.slice(0, HOME_PER_PAGE), 150);
-
-  // start banner timer
-  startBanner();
+  VIDEOS=j.videos;
+  VIDEOS.slice(0,HOME_PER_PAGE).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card show";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
+    c.onclick=()=>location.hash=`/e/${v.embed}`;
+    list.appendChild(c);
+  });
 });
 
-/* ================= EVENTS ================= */
 window.addEventListener("hashchange",handleRoute);
 </script>
 
