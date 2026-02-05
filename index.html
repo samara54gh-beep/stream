@@ -19,8 +19,6 @@ body{
   color:var(--text);
   font-family:system-ui;
 }
-
-/* ===== Header ===== */
 header{background:#000;border-bottom:1px solid #1f1f2a}
 .header-inner{
   max-width:1200px;
@@ -35,13 +33,11 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   color:var(--accent);
   text-decoration:none
 }
-
-/* ===== Container ===== */
 .container{max-width:1200px;margin:auto;padding:16px}
 
-/* ===== Video Player ===== */
+/* ===== PLAYER ===== */
 .player{
-  display:none; /* hide until /#/e/ID */
+  display:none;
   position:relative;
   background:#000;
   border-radius:16px;
@@ -52,12 +48,12 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   width:100%;
   height:520px;
   background:#000;
+  object-fit:cover; /* 🔥 FIX UTAMA */
 }
 @media(max-width:768px){
   .player video{height:240px}
 }
 
-/* ===== Fullscreen Custom ===== */
 #playerBox.fullscreen{
   position:fixed;
   inset:0;
@@ -77,7 +73,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   #playerBox.fullscreen video{object-fit:cover;}
 }
 
-/* ===== Center Play Button ===== */
+/* ===== UI ===== */
 #centerPlay{
   position:absolute;
   inset:0;
@@ -91,7 +87,6 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 }
 .player.playing #centerPlay{display:none}
 
-/* ===== Overlay Ads ===== */
 #adOverlay{
   position:absolute;
   inset:0;
@@ -100,8 +95,6 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   background:rgba(0,0,0,.15);
   cursor:pointer;
 }
-
-/* ===== Banner Ads ===== */
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -118,7 +111,6 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
 
-/* ===== Fullscreen Button ===== */
 #fullscreenBtn{
   position:absolute;
   top:10px;
@@ -132,14 +124,13 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   cursor:pointer;
 }
 
-/* ===== Video Info ===== */
 .video-info{display:none;margin-bottom:16px}
 .video-info h1{font-size:18px;margin:6px 0}
 
-/* ===== Video Grid ===== */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  highlight-gap:14px;
   gap:14px;
 }
 .card{
@@ -164,14 +155,19 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .info{padding:12px}
 .title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* ===== Pagination Buttons ===== */
 .pagination{display:flex;justify-content:center;gap:12px;margin:16px 0;}
-.pagination button{padding:6px 10px;background:var(--accent);border:none;color:#fff;border-radius:6px;cursor:pointer;}
+.pagination button{
+  padding:6px 10px;
+  background:var(--accent);
+  border:none;
+  color:#fff;
+  border-radius:6px;
+  cursor:pointer;
+}
 
-/* ===== Footer ===== */
 footer{text-align:center;padding:20px;color:#777;font-size:13px}
 
-/* ===== Hide Default Fullscreen ===== */
+/* hide native fullscreen */
 video::-webkit-media-controls-fullscreen-button{display:none!important;}
 video::-webkit-media-controls-picture-in-picture-button{display:none!important;}
 video::-moz-media-controls-fullscreen-button{display:none!important;}
@@ -187,36 +183,34 @@ video::-moz-media-controls-fullscreen-button{display:none!important;}
 </header>
 
 <div class="container">
-<div id="playerBox" class="player">
-  <video id="player" controls playsinline preload="metadata"></video>
-  <div id="centerPlay">▶</div>
-  <button id="fullscreenBtn">Fullscreen</button>
-  <a id="adBanner" href="#" target="_blank" rel="nofollow sponsored"></a>
-  <div id="adOverlay"></div>
-</div>
+  <div id="playerBox" class="player">
+    <video id="player" controls playsinline preload="metadata"></video>
+    <div id="centerPlay">▶</div>
+    <button id="fullscreenBtn">Fullscreen</button>
+    <a id="adBanner" href="#" target="_blank" rel="nofollow sponsored"></a>
+    <div id="adOverlay"></div>
+  </div>
 
-<div id="videoInfo" class="video-info">
-  <h1 id="videoTitle"></h1>
-</div>
+  <div id="videoInfo" class="video-info">
+    <h1 id="videoTitle"></h1>
+  </div>
 
-<div id="videos" class="grid"></div>
+  <div id="videos" class="grid"></div>
 
-<div class="pagination">
-  <button id="prevBtn">Prev</button>
-  <button id="nextBtn">Next</button>
-</div>
+  <div class="pagination">
+    <button id="prevBtn">Prev</button>
+    <button id="nextBtn">Next</button>
+  </div>
 </div>
 
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-// ===== CONFIG =====
-const API_JSON = "https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
+const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const HOME_PER_PAGE=12;
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
-// ===== DOM ELEMENTS =====
 const list=document.getElementById("videos");
 const playerBox=document.getElementById("playerBox");
 const player=document.getElementById("player");
@@ -229,23 +223,20 @@ const centerPlay=document.getElementById("centerPlay");
 const prevBtn=document.getElementById("prevBtn");
 const nextBtn=document.getElementById("nextBtn");
 
-// ===== ADS SETUP =====
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-let firstPlayAd=true; // first play ad flag
-let cardClickAd=true;  // card click ad flag
+let firstPlayAd=true;
+let cardClickAd=true;
 
-// ===== Center Play Button =====
 centerPlay.onclick=()=>{
   if(firstPlayAd){
-    window.open(AD_LINK,"_blank"); // open ad on first play
+    window.open(AD_LINK,"_blank");
     firstPlayAd=false;
   }
   player.play();
 };
 
-// ===== Overlay Ads every 25s =====
 let overlayTimer=null;
 function showOverlay(){
   adOverlay.style.display="block";
@@ -261,7 +252,6 @@ player.addEventListener("play",()=>{
   overlayTimer=setTimeout(showOverlay,25000);
 });
 
-// ===== Banner Ads every 30s =====
 let bannerTimer=null;
 function showBanner(){
   adBanner.style.display="block";
@@ -278,65 +268,48 @@ player.addEventListener("play",()=>{
   bannerTimer=setTimeout(showBanner,30000);
 });
 
-// ===== Player UI state =====
 player.addEventListener("play",()=>playerBox.classList.add("playing"));
 player.addEventListener("pause",()=>playerBox.classList.remove("playing"));
 
-// ===== Fullscreen Toggle =====
 fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
 
-// ===== VIDEO LIST =====
 let VIDEOS=[];
-let currentPage = 1;
+let currentPage=1;
 
-// Render homepage page
 function renderPage(page){
-  list.innerHTML = "";
-  const start = (page-1) * HOME_PER_PAGE;
-  const end = page * HOME_PER_PAGE;
+  list.innerHTML="";
+  const start=(page-1)*HOME_PER_PAGE;
+  const end=page*HOME_PER_PAGE;
   VIDEOS.slice(start,end).forEach(v=>{
-    const c = document.createElement("div");
-    c.className = "card show";
-    c.innerHTML = `<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
-    c.onclick = () => {
+    const c=document.createElement("div");
+    c.className="card show";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
+    c.onclick=()=>{
       if(cardClickAd){
         window.open(AD_LINK,"_blank");
         cardClickAd=false;
         setTimeout(()=>cardClickAd=true,1000);
       }
-      location.hash = `/e/${v.embed}`;
+      location.hash=`/e/${v.embed}`;
     };
     list.appendChild(c);
   });
 }
 
-// Pagination buttons
-prevBtn.onclick = () => {
-  if(currentPage > 1){
-    currentPage--;
-    renderPage(currentPage);
-  }
-};
-nextBtn.onclick = () => {
-  if(currentPage * HOME_PER_PAGE < VIDEOS.length){
-    currentPage++;
-    renderPage(currentPage);
-  }
-};
+prevBtn.onclick=()=>{if(currentPage>1){currentPage--;renderPage(currentPage);}};
+nextBtn.onclick=()=>{if(currentPage*HOME_PER_PAGE<VIDEOS.length){currentPage++;renderPage(currentPage);}};
 
-// Get video ID from URL
 function getVideoId(){
   const m=location.hash.match(/^#\/e\/([\w]+)/);
   return m?m[1]:null;
 }
 
-// Render random cards in stream page
-function renderRandomCards(excludeId, count=12){
-  list.innerHTML = "";
-  const filtered = VIDEOS.filter(v=>v.embed !== excludeId);
+function renderRandomCards(excludeId,count=12){
+  list.innerHTML="";
+  const filtered=VIDEOS.filter(v=>v.embed!==excludeId);
   for(let i=0;i<count;i++){
-    const v = filtered[Math.floor(Math.random()*filtered.length)];
-    const c = document.createElement("div");
+    const v=filtered[Math.floor(Math.random()*filtered.length)];
+    const c=document.createElement("div");
     c.className="card show";
     c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
     c.onclick=()=>{
@@ -351,26 +324,24 @@ function renderRandomCards(excludeId, count=12){
   }
 }
 
-// Handle route (hashchange)
 function handleRoute(){
   const id=getVideoId();
   if(!id){
     playerBox.style.display="none";
     videoInfo.style.display="none";
-    renderPage(currentPage); // homepage
+    renderPage(currentPage);
     return;
   }
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v) return;
-  player.src=`https://cdn.videy.co/${id}.mp4?ts=${Date.now()}`; // bypass cache
+  player.src=`https://cdn.videy.co/${id}.mp4`;
   playerBox.style.display="block";
   videoInfo.style.display="block";
   videoTitle.textContent=v.title;
   firstPlayAd=true;
-  renderRandomCards(id); // show 12 random cards under player
+  renderRandomCards(id);
 }
 
-// ===== Fetch Video List =====
 fetch(API_JSON)
 .then(r=>r.json())
 .then(j=>{
@@ -379,8 +350,7 @@ fetch(API_JSON)
   handleRoute();
 });
 
-// Listen to hash changes
-window.addEventListener("hashchange", handleRoute);
+window.addEventListener("hashchange",handleRoute);
 </script>
 </body>
 </html>
