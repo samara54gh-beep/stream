@@ -167,9 +167,7 @@ video{
 }
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* ============================= */
 /* BROWSER FULLSCREEN (CSS ONLY) */
-/* ============================= */
 body.browser-fs{
   overflow:hidden;
 }
@@ -202,12 +200,12 @@ body.browser-fs .video-box{
 body.browser-fs .controls{
   position:absolute;
   bottom:0;left:0;right:0;
-  z-index:20;
+  z-index:20
 }
 body.browser-fs .seek{
   position:absolute;
   bottom:56px;left:0;right:0;
-  z-index:19;
+  z-index:19
 }
 </style>
 </head>
@@ -241,7 +239,6 @@ body.browser-fs .seek{
 </div>
 
 <h1 id="videoTitle" class="video-title"></h1>
-
 <div id="videos" class="grid"></div>
 
 <div class="pagination">
@@ -285,11 +282,17 @@ let VIDEOS=[],page=1;
 let adsTimer=null;
 const ADS_INTERVAL=25000;
 
+/* banner delay 35 detik sejak site dibuka */
+let bannerReady=false;
+setTimeout(()=>{ bannerReady=true; },35000);
+
 /* ADS TIMER */
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
+    if(!bannerReady) return;
     if(video.paused || document.hidden) return;
+
     tapOverlay.style.display="flex";
     adBanner.style.display="block";
     unlocked=false;
@@ -329,7 +332,7 @@ forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTim
 video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
 seek.oninput=()=>video.currentTime=seek.value;
 
-/* BROWSER FULLSCREEN TOGGLE */
+/* BROWSER FULLSCREEN */
 fsBtn.onclick=()=>{
   document.body.classList.toggle("browser-fs");
   fsBtn.textContent=document.body.classList.contains("browser-fs")
@@ -393,7 +396,7 @@ function route(){
   video.src=`https://cdn.videy.co/${id}.mp4`;
 
   tapOverlay.style.display="flex";
-  adBanner.style.display="block";
+  adBanner.style.display="none";
   unlocked=false;
 
   renderRecommend();
