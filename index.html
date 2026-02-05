@@ -77,11 +77,6 @@ video{
   cursor:pointer;
 }
 
-/* hide fullscreen button on mobile */
-@media (max-width:768px){
-  #fsBtn{display:none}
-}
-
 /* ADS BANNER */
 #adBanner{
   position:absolute;
@@ -172,26 +167,47 @@ video{
 }
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* FULLSCREEN MODE (DESKTOP ONLY) */
-.player:fullscreen{
+/* ============================= */
+/* BROWSER FULLSCREEN (CSS ONLY) */
+/* ============================= */
+body.browser-fs{
+  overflow:hidden;
+}
+body.browser-fs header,
+body.browser-fs footer,
+body.browser-fs .pagination,
+body.browser-fs #videos,
+body.browser-fs .video-title{
+  display:none !important;
+}
+body.browser-fs .container{
+  padding:0;
+  max-width:none;
+}
+body.browser-fs .player{
+  display:block;
+  position:fixed;
+  inset:0;
   width:100vw;
   height:100vh;
   margin:0;
   border-radius:0;
+  z-index:9999;
   background:#000;
 }
-.player:fullscreen #tapOverlay{z-index:30}
-.player:fullscreen #adBanner{z-index:25}
-.player:fullscreen #fsBtn{z-index:40}
-.player:fullscreen .controls{
+body.browser-fs .video-box{
+  width:100%;
+  height:100%;
+}
+body.browser-fs .controls{
   position:absolute;
   bottom:0;left:0;right:0;
-  z-index:35
+  z-index:20;
 }
-.player:fullscreen .seek{
+body.browser-fs .seek{
   position:absolute;
   bottom:56px;left:0;right:0;
-  z-index:34
+  z-index:19;
 }
 </style>
 </head>
@@ -245,7 +261,6 @@ const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/
 const HOME_PER_PAGE=12;
 const STREAM_RECOMMEND=6;
 const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
-const isDesktop=!isMobile;
 
 const video=document.getElementById("video");
 const tapOverlay=document.getElementById("tapOverlay");
@@ -314,21 +329,12 @@ forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTim
 video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
 seek.oninput=()=>video.currentTime=seek.value;
 
-/* FULLSCREEN DESKTOP ONLY */
+/* BROWSER FULLSCREEN TOGGLE */
 fsBtn.onclick=()=>{
-  if(!isDesktop) return;
-
-  if(!document.fullscreenElement){
-    playerBox.requestFullscreen({navigationUI:"hide"});
-    fsBtn.textContent="Exit Fullscreen";
-  }else{
-    document.exitFullscreen();
-    fsBtn.textContent="Fullscreen";
-  }
+  document.body.classList.toggle("browser-fs");
+  fsBtn.textContent=document.body.classList.contains("browser-fs")
+    ?"Exit Fullscreen":"Fullscreen";
 };
-document.addEventListener("fullscreenchange",()=>{
-  if(!document.fullscreenElement) fsBtn.textContent="Fullscreen";
-});
 
 /* ROUTER */
 function getId(){
@@ -369,6 +375,8 @@ function route(){
   const id=getId();
   if(!id){
     clearInterval(adsTimer);
+    document.body.classList.remove("browser-fs");
+    fsBtn.textContent="Fullscreen";
     playerBox.style.display="none";
     titleEl.style.display="none";
     pagination.style.display="flex";
