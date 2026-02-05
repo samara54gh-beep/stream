@@ -49,7 +49,7 @@ video{
   object-fit:contain;
 }
 
-/* OVERLAY PLAY */
+/* OVERLAY */
 #tapOverlay{
   position:absolute;
   inset:0;
@@ -62,7 +62,7 @@ video{
   z-index:6;
 }
 
-/* FULLSCREEN BUTTON */
+/* FULLSCREEN */
 #fsBtn{
   position:absolute;
   top:12px;
@@ -77,7 +77,7 @@ video{
   cursor:pointer;
 }
 
-/* BANNER ADS */
+/* ADS BANNER */
 #adBanner{
   position:absolute;
   top:12px;
@@ -175,8 +175,6 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
   border-radius:0;
   background:#000;
 }
-.player:fullscreen .video-box{width:100%;height:100%}
-.player:fullscreen video{width:100%;height:100%}
 .player:fullscreen #tapOverlay{z-index:30}
 .player:fullscreen #adBanner{z-index:25}
 .player:fullscreen #fsBtn{z-index:40}
@@ -235,11 +233,10 @@ const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4O
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
-const HOME_PER_PAGE = 12;
-const STREAM_RECOMMEND = 6;
+const HOME_PER_PAGE=12;
+const STREAM_RECOMMEND=6;
 const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
-/* DOM */
 const video=document.getElementById("video");
 const tapOverlay=document.getElementById("tapOverlay");
 const playPause=document.getElementById("playPause");
@@ -260,14 +257,28 @@ adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
 let tapCount=0, unlocked=false;
 let VIDEOS=[],page=1;
+let adsTimer=null;
+const ADS_INTERVAL=25000;
 
-/* OVERLAY PLAY */
+/* ADS TIMER */
+function startAdsTimer(){
+  clearInterval(adsTimer);
+  adsTimer=setInterval(()=>{
+    if(video.paused || document.hidden) return;
+    tapOverlay.style.display="flex";
+    adBanner.style.display="block";
+    unlocked=false;
+    tapCount=0;
+  },ADS_INTERVAL);
+}
+
+/* OVERLAY */
 tapOverlay.onclick=async()=>{
   tapCount++;
   if(tapCount < (isMobile?3:1)) return;
 
   tapOverlay.style.display="none";
-  adBanner.style.display="none"; // FIX
+  adBanner.style.display="none";
   tapCount=0;
 
   if(!unlocked){
@@ -276,9 +287,13 @@ tapOverlay.onclick=async()=>{
   }
 
   try{
-    video.muted=true;await video.play();
-    video.pause();video.muted=false;video.play();
+    video.muted=true;
+    await video.play();
+    video.pause();
+    video.muted=false;
+    video.play();
     playPause.textContent="⏸ Pause";
+    startAdsTimer();
   }catch(e){}
 };
 
@@ -341,6 +356,7 @@ function renderRecommend(){
 function route(){
   const id=getId();
   if(!id){
+    clearInterval(adsTimer);
     playerBox.style.display="none";
     titleEl.style.display="none";
     pagination.style.display="flex";
@@ -357,7 +373,7 @@ function route(){
   video.src=`https://cdn.videy.co/${id}.mp4`;
 
   tapOverlay.style.display="flex";
-  adBanner.style.display="block"; // FIX
+  adBanner.style.display="block";
   unlocked=false;
 
   renderRecommend();
