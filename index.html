@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Videy Streaming</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <style>
 :root{
@@ -12,12 +12,15 @@
   --text:#fff;
 }
 *{box-sizing:border-box}
-body{
+html,body{
   margin:0;
   background:var(--bg);
   color:var(--text);
   font-family:system-ui;
+  height:100%;
 }
+
+/* HEADER */
 header{background:#000;border-bottom:1px solid #1f1f2a}
 .header-inner{
   max-width:1200px;margin:auto;
@@ -36,22 +39,47 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   overflow:hidden;
   margin-bottom:12px;
 }
+
+/* RESPONSIVE BOX (ANTI WEBVIEW BUG) */
 .iframe-box{
+  position:relative;
   width:100%;
-  height:520px;
   background:#000;
-}
-@media(max-width:768px){
-  .iframe-box{height:260px}
-}
-.iframe-box video{
-  width:100%;
-  height:100%;
-  background:#000;
-  object-fit:contain;
+  overflow:hidden;
 }
 
-/* UI */
+/* default portrait */
+.iframe-box::before{
+  content:"";
+  display:block;
+  padding-top:177.78%;
+}
+
+/* desktop */
+@media(min-width:768px){
+  .iframe-box::before{
+    padding-top:56.25%;
+  }
+}
+
+.iframe-box video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#000;
+}
+
+/* PORTRAIT DETECT */
+.player.portrait .iframe-box::before{
+  padding-top:177.78%;
+}
+.player.portrait video{
+  object-fit:cover;
+}
+
+/* FULLSCREEN */
 #fullscreenBtn{
   position:absolute;
   top:10px;
@@ -73,7 +101,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   font-weight:600;
 }
 
-/* ADS */
+/* PLAY OVERLAY */
 #centerPlay{
   position:absolute;
   inset:0;
@@ -87,15 +115,13 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 }
 .player.playing #centerPlay{display:none}
 
+/* ADS */
 #adOverlay{
   position:absolute;
   inset:0;
   z-index:5;
   display:none;
-  background:rgba(0,0,0,.15);
-  cursor:pointer;
 }
-
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -112,7 +138,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
 
-/* cards */
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
@@ -130,8 +156,10 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .thumb::after{
   content:"VIDEY";
   position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   color:var(--accent);
 }
 .info{padding:12px}
@@ -141,6 +169,8 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   overflow:hidden;
   text-overflow:ellipsis
 }
+
+/* PAGINATION */
 .pagination{
   display:flex;
   justify-content:center;
@@ -155,11 +185,17 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   border-radius:6px;
   cursor:pointer
 }
+
 footer{
   text-align:center;
   padding:20px;
   color:#777;
   font-size:13px
+}
+
+/* IN-APP BROWSER FIX */
+@supports (-webkit-touch-callout: none){
+  .iframe-box{max-height:none!important}
 }
 </style>
 </head>
@@ -179,13 +215,12 @@ footer{
   <button id="fullscreenBtn">Fullscreen</button>
 
   <div class="iframe-box">
-    <video
-      id="videoPlayer"
+    <video id="videoPlayer"
       controls
       preload="metadata"
       playsinline
-      webkit-playsinline
-    ></video>
+      webkit-playsinline>
+    </video>
   </div>
 
   <div id="centerPlay">▶</div>
@@ -207,7 +242,10 @@ footer{
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
+document.documentElement.style.height="100%";
+document.body.style.height="100%";
+
+const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const HOME_PER_PAGE=12;
 
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
@@ -259,7 +297,7 @@ function showBanner(){
   };
 }
 
-/* FULLSCREEN (REAL) */
+/* FULLSCREEN */
 fsBtn.onclick=()=>{
   if(!document.fullscreenElement){
     playerBox.requestFullscreen();
@@ -277,8 +315,7 @@ function getVideoId(){
 function renderPage(page){
   list.innerHTML="";
   const start=(page-1)*HOME_PER_PAGE;
-  const end=page*HOME_PER_PAGE;
-  VIDEOS.slice(start,end).forEach(v=>{
+  VIDEOS.slice(start,start+HOME_PER_PAGE).forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
@@ -300,7 +337,7 @@ function handleRoute(){
   }
 
   const v=VIDEOS.find(x=>x.embed===id);
-  if(!v) return;
+  if(!v)return;
 
   playerBox.style.display="block";
   titleEl.style.display="block";
@@ -319,6 +356,15 @@ function handleRoute(){
   setTimeout(showBanner,30000);
 }
 
+/* ORIENTATION DETECT */
+video.addEventListener("loadedmetadata",()=>{
+  if(video.videoHeight>video.videoWidth){
+    playerBox.classList.add("portrait");
+  }else{
+    playerBox.classList.remove("portrait");
+  }
+});
+
 prevBtn.onclick=()=>{if(currentPage>1){currentPage--;renderPage(currentPage)}}
 nextBtn.onclick=()=>{if(currentPage*HOME_PER_PAGE<VIDEOS.length){currentPage++;renderPage(currentPage)}}
 
@@ -329,6 +375,7 @@ fetch(API_JSON)
   renderPage(currentPage);
   handleRoute();
 });
+
 window.addEventListener("hashchange",handleRoute);
 </script>
 
