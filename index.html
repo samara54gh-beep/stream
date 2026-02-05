@@ -49,31 +49,21 @@ video{
   object-fit:contain;
 }
 
-/* OVERLAY — TRANSPARAN + PLAY ICON */
+/* OVERLAY – TRANSPARAN */
 #tapOverlay{
   position:absolute;
   inset:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:transparent;
+  font-size:72px;
+  color:#fff;
+  background:transparent; /* PATCH */
   cursor:pointer;
   z-index:6;
 }
-#tapOverlay::after{
-  content:"▶";
-  width:72px;
-  height:72px;
-  border-radius:50%;
-  background:rgba(0,0,0,.55);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:36px;
-  color:#fff;
-}
 
-/* FULLSCREEN BUTTON */
+/* FULLSCREEN */
 #fsBtn{
   position:absolute;
   top:12px;
@@ -176,23 +166,17 @@ video{
   border-radius:6px;
   cursor:pointer
 }
+
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
 /* BROWSER FULLSCREEN */
-body.browser-fs{
-  overflow:hidden;
-}
+body.browser-fs{overflow:hidden}
 body.browser-fs header,
 body.browser-fs footer,
 body.browser-fs .pagination,
 body.browser-fs #videos,
-body.browser-fs .video-title{
-  display:none !important;
-}
-body.browser-fs .container{
-  padding:0;
-  max-width:none;
-}
+body.browser-fs .video-title{display:none!important}
+body.browser-fs .container{padding:0;max-width:none}
 body.browser-fs .player{
   display:block;
   position:fixed;
@@ -204,25 +188,13 @@ body.browser-fs .player{
   z-index:9999;
   background:#000;
 }
-body.browser-fs .video-box{
-  width:100%;
-  height:100%;
-}
-body.browser-fs .controls{
-  position:absolute;
-  bottom:0;left:0;right:0;
-  z-index:20
-}
-body.browser-fs .seek{
-  position:absolute;
-  bottom:56px;left:0;right:0;
-  z-index:19
-}
+body.browser-fs .video-box{width:100%;height:100%}
+body.browser-fs .controls{position:absolute;bottom:0;left:0;right:0;z-index:20}
+body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0;z-index:19}
 </style>
 </head>
 
 <body>
-
 <header>
   <div class="header-inner">
     <a href="/" class="logo">VIDEY</a>
@@ -231,38 +203,35 @@ body.browser-fs .seek{
 </header>
 
 <div class="container">
+  <div id="playerBox" class="player">
+    <div class="video-box">
+      <video id="video" playsinline preload="metadata"></video>
+      <div id="tapOverlay">▶</div>
+      <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
+      <button id="fsBtn">Fullscreen</button>
+    </div>
 
-<div id="playerBox" class="player">
-  <div class="video-box">
-    <video id="video" playsinline preload="metadata"></video>
-    <div id="tapOverlay"></div>
-    <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
-    <button id="fsBtn">Fullscreen</button>
+    <input id="seek" class="seek" type="range" min="0" value="0">
+    <div class="controls">
+      <button id="back10">⏪ 10s</button>
+      <button id="playPause">▶ Play</button>
+      <button id="forward10">⏩ 10s</button>
+    </div>
   </div>
 
-  <input id="seek" class="seek" type="range" min="0" value="0">
+  <h1 id="videoTitle" class="video-title"></h1>
+  <div id="videos" class="grid"></div>
 
-  <div class="controls">
-    <button id="back10">⏪ 10s</button>
-    <button id="playPause">▶ Play</button>
-    <button id="forward10">⏩ 10s</button>
+  <div class="pagination">
+    <button id="prevBtn">Prev</button>
+    <button id="nextBtn">Next</button>
   </div>
-</div>
-
-<h1 id="videoTitle" class="video-title"></h1>
-<div id="videos" class="grid"></div>
-
-<div class="pagination">
-  <button id="prevBtn">Prev</button>
-  <button id="nextBtn">Next</button>
-</div>
-
 </div>
 
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
+const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
@@ -293,17 +262,15 @@ let VIDEOS=[],page=1;
 let adsTimer=null;
 const ADS_INTERVAL=25000;
 
-/* banner delay 35 detik */
+/* banner delay */
 let bannerReady=false;
 setTimeout(()=>bannerReady=true,35000);
 
-/* ADS TIMER */
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
     if(!bannerReady) return;
     if(video.paused || document.hidden) return;
-
     tapOverlay.style.display="flex";
     adBanner.style.display="block";
     unlocked=false;
@@ -315,16 +282,13 @@ function startAdsTimer(){
 tapOverlay.onclick=async()=>{
   tapCount++;
   if(tapCount < (isMobile?3:1)) return;
-
   tapOverlay.style.display="none";
   adBanner.style.display="none";
   tapCount=0;
-
   if(!unlocked){
     window.open(AD_LINK,"_blank");
     unlocked=true;
   }
-
   try{
     video.muted=true;
     await video.play();
@@ -336,22 +300,31 @@ tapOverlay.onclick=async()=>{
   }catch(e){}
 };
 
-/* PAUSE / PLAY VISUAL */
-video.addEventListener("play",()=>tapOverlay.style.display="none");
-video.addEventListener("pause",()=>tapOverlay.style.display="flex");
+/* PAUSE / PLAY → OVERLAY MUNCUL */
+video.addEventListener("pause",()=>{
+  tapOverlay.style.display="flex";
+  playPause.textContent="▶ Play";
+});
+video.addEventListener("play",()=>{
+  tapOverlay.style.display="none";
+  playPause.textContent="⏸ Pause";
+});
 
-video.onclick=()=>video.paused?(video.play(),playPause.textContent="⏸ Pause"):(video.pause(),playPause.textContent="▶ Play");
+video.onclick=()=>video.paused?video.play():video.pause();
 playPause.onclick=()=>video.onclick();
+
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
 forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
-video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
+video.addEventListener("timeupdate",()=>{
+  seek.max=video.duration||0;
+  seek.value=video.currentTime;
+});
 seek.oninput=()=>video.currentTime=seek.value;
 
 /* FULLSCREEN */
 fsBtn.onclick=()=>{
   document.body.classList.toggle("browser-fs");
-  fsBtn.textContent=document.body.classList.contains("browser-fs")
-    ?"Exit Fullscreen":"Fullscreen";
+  fsBtn.textContent=document.body.classList.contains("browser-fs")?"Exit Fullscreen":"Fullscreen";
 };
 
 /* ROUTER */
@@ -369,12 +342,11 @@ function renderHome(){
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
     c.onclick=()=>{
       window.open(AD_LINK,"_blank");
-      location.href=\`/#/e/\${v.embed}\`;
+      location.href=`/#/e/${v.embed}`;
     };
     list.appendChild(c);
   });
 }
-
 function renderRecommend(){
   list.innerHTML="";
   shuffle(VIDEOS).slice(0,STREAM_RECOMMEND).forEach(v=>{
@@ -383,7 +355,7 @@ function renderRecommend(){
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
     c.onclick=()=>{
       window.open(AD_LINK,"_blank");
-      location.href=\`/#/e/\${v.embed}\`;
+      location.href=`/#/e/${v.embed}`;
     };
     list.appendChild(c);
   });
@@ -403,17 +375,14 @@ function route(){
   }
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v) return;
-
   playerBox.style.display="block";
   titleEl.style.display="block";
   pagination.style.display="none";
   titleEl.textContent=v.title;
-  video.src=\`https://cdn.videy.co/\${id}.mp4\`;
-
+  video.src=`https://cdn.videy.co/${id}.mp4`;
   tapOverlay.style.display="flex";
   adBanner.style.display="none";
   unlocked=false;
-
   renderRecommend();
 }
 
@@ -426,6 +395,5 @@ fetch(API_JSON).then(r=>r.json()).then(j=>{
 });
 window.addEventListener("hashchange",route);
 </script>
-
 </body>
 </html>
