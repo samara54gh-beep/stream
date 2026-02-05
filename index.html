@@ -62,21 +62,6 @@ video{
   z-index:6;
 }
 
-/* FULLSCREEN BUTTON */
-#fsBtn{
-  position:absolute;
-  top:12px;
-  right:12px;
-  z-index:8;
-  background:rgba(0,0,0,.6);
-  color:#fff;
-  border:none;
-  padding:6px 10px;
-  border-radius:6px;
-  font-size:13px;
-  cursor:pointer;
-}
-
 /* BANNER ADS */
 #adBanner{
   position:absolute;
@@ -93,6 +78,23 @@ video{
   z-index:7;
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
+
+/* FULLSCREEN BUTTON (MERAH) */
+#fsBtn{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:8;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+}
+#fsBtn:hover{opacity:.9}
 
 /* CONTROLS */
 .seek{width:100%}
@@ -215,11 +217,11 @@ const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4O
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
-const HOME_PER_PAGE = 12;
-const STREAM_RECOMMEND = 6;
+const HOME_PER_PAGE=12;
+const STREAM_RECOMMEND=6;
 const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
-/* DOM (JANGAN DIHAPUS) */
+/* DOM */
 const video=document.getElementById("video");
 const tapOverlay=document.getElementById("tapOverlay");
 const playPause=document.getElementById("playPause");
@@ -241,7 +243,7 @@ adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 let tapCount=0, unlocked=false;
 let VIDEOS=[],page=1;
 
-/* OVERLAY PLAY (3x tap mobile) */
+/* OVERLAY PLAY (3x TAP HP) */
 tapOverlay.onclick=async()=>{
   tapCount++;
   if(tapCount < (isMobile?3:1)) return;
@@ -262,7 +264,7 @@ forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTim
 video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
 seek.oninput=()=>video.currentTime=seek.value;
 
-/* REAL FULLSCREEN */
+/* FULLSCREEN REAL */
 fsBtn.onclick=()=>{
   if(!document.fullscreenElement){
     playerBox.requestFullscreen();
@@ -289,10 +291,7 @@ function renderHome(){
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
-    c.onclick=()=>{
-      window.open(AD_LINK,"_blank");
-      location.href=`/#/e/${v.embed}`;
-    };
+    c.onclick=()=>location.href=`/#/e/${v.embed}`;
     list.appendChild(c);
   });
 }
@@ -303,10 +302,7 @@ function renderRecommend(){
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
-    c.onclick=()=>{
-      window.open(AD_LINK,"_blank");
-      location.href=`/#/e/${v.embed}`;
-    };
+    c.onclick=()=>location.href=`/#/e/${v.embed}`;
     list.appendChild(c);
   });
 }
@@ -321,7 +317,7 @@ function route(){
     return;
   }
   const v=VIDEOS.find(x=>x.embed===id);
-  if(!v) return;
+  if(!v)return;
   playerBox.style.display="block";
   titleEl.style.display="block";
   pagination.style.display="none";
