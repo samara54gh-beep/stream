@@ -4,11 +4,10 @@
 <meta charset="UTF-8">
 <title>Videy Streaming</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --bg:#0b0b0f;
-  --card:#15151d;
   --accent:#e50914;
   --text:#fff;
 }
@@ -21,18 +20,11 @@ body{
 }
 header{background:#000;border-bottom:1px solid #1f1f2a}
 .header-inner{
-  max-width:1200px;
-  margin:auto;
+  max-width:1200px;margin:auto;
   padding:14px 20px;
-  display:flex;
-  justify-content:space-between
+  display:flex;justify-content:space-between
 }
-.logo{
-  font-size:22px;
-  font-weight:700;
-  color:var(--accent);
-  text-decoration:none
-}
+.logo{font-size:22px;font-weight:700;color:var(--accent);text-decoration:none}
 .container{max-width:1200px;margin:auto;padding:16px}
 
 /* ===== PLAYER ===== */
@@ -42,19 +34,32 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   background:#000;
   border-radius:16px;
   overflow:hidden;
-  margin-bottom:16px;
+  margin-bottom:12px;
 }
-.player video{
+
+/* iframe wrapper */
+.iframe-box{
   width:100%;
   height:520px;
   background:#000;
-  object-fit:cover; /* 🔥 FIX UTAMA */
 }
 @media(max-width:768px){
-  .player video{height:240px}
+  .iframe-box{height:260px}
+}
+.iframe-box iframe{
+  width:100%;
+  height:100%;
+  border:0;
 }
 
-#playerBox.fullscreen{
+/* portrait center */
+.player.portrait .iframe-box{
+  max-width:520px;
+  margin:auto;
+}
+
+/* fullscreen fake */
+.player.fullscreen{
   position:fixed;
   inset:0;
   width:100vw;
@@ -62,18 +67,34 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   z-index:9999;
   border-radius:0;
 }
-#playerBox.fullscreen video{
-  width:100vw;
-  height:100vh;
+.player.fullscreen .iframe-box{height:100vh}
+@media (orientation:landscape){
+  .player.fullscreen iframe{object-fit:contain}
 }
-@media (orientation: landscape){
-  #playerBox.fullscreen video{object-fit:contain;}
-}
-@media (orientation: portrait){
-  #playerBox.fullscreen video{object-fit:cover;}
+@media (orientation:portrait){
+  .player.fullscreen iframe{object-fit:cover}
 }
 
-/* ===== UI ===== */
+/* UI */
+#fullscreenBtn{
+  position:absolute;top:10px;right:10px;
+  z-index:10;
+  background:var(--accent);
+  border:none;color:#fff;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* ===== TITLE (STREAM PAGE ONLY) ===== */
+.video-title{
+  display:none;
+  margin:10px 4px 18px;
+  font-size:18px;
+  font-weight:600;
+}
+
+/* ADS */
 #centerPlay{
   position:absolute;
   inset:0;
@@ -95,6 +116,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   background:rgba(0,0,0,.15);
   cursor:pointer;
 }
+
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -111,26 +133,10 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
 
-#fullscreenBtn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  z-index:10;
-  background:var(--accent);
-  border:none;
-  color:#fff;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-.video-info{display:none;margin-bottom:16px}
-.video-info h1{font-size:18px;margin:6px 0}
-
+/* cards */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  highlight-gap:14px;
   gap:14px;
 }
 .card{
@@ -139,9 +145,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   cursor:pointer;
   overflow:hidden;
   transition:.3s;
-  opacity:0;
 }
-.card.show{opacity:1}
 .card:hover{transform:translateY(-6px) scale(1.02)}
 .thumb{padding-top:56.25%;background:#000;position:relative}
 .thumb::after{
@@ -149,32 +153,21 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   position:absolute;
   top:50%;left:50%;
   transform:translate(-50%,-50%);
-  font-family:'Orbitron';
   color:var(--accent);
 }
 .info{padding:12px}
 .title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-.pagination{display:flex;justify-content:center;gap:12px;margin:16px 0;}
+.pagination{display:flex;justify-content:center;gap:12px;margin:16px 0}
 .pagination button{
-  padding:6px 10px;
-  background:var(--accent);
-  border:none;
-  color:#fff;
-  border-radius:6px;
-  cursor:pointer;
+  padding:6px 10px;background:var(--accent);
+  border:none;color:#fff;border-radius:6px;cursor:pointer
 }
-
 footer{text-align:center;padding:20px;color:#777;font-size:13px}
-
-/* hide native fullscreen */
-video::-webkit-media-controls-fullscreen-button{display:none!important;}
-video::-webkit-media-controls-picture-in-picture-button{display:none!important;}
-video::-moz-media-controls-fullscreen-button{display:none!important;}
 </style>
 </head>
 
 <body>
+
 <header>
   <div class="header-inner">
     <a href="/" class="logo">VIDEY</a>
@@ -183,24 +176,32 @@ video::-moz-media-controls-fullscreen-button{display:none!important;}
 </header>
 
 <div class="container">
-  <div id="playerBox" class="player">
-    <video id="player" controls playsinline preload="metadata"></video>
-    <div id="centerPlay">▶</div>
-    <button id="fullscreenBtn">Fullscreen</button>
-    <a id="adBanner" href="#" target="_blank" rel="nofollow sponsored"></a>
-    <div id="adOverlay"></div>
+
+<div id="playerBox" class="player">
+  <button id="fullscreenBtn">Fullscreen</button>
+
+  <div class="iframe-box">
+    <iframe id="playerFrame"
+      loading="lazy"
+      allow="autoplay; fullscreen"
+      referrerpolicy="no-referrer"></iframe>
   </div>
 
-  <div id="videoInfo" class="video-info">
-    <h1 id="videoTitle"></h1>
-  </div>
+  <div id="centerPlay">▶</div>
+  <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
+  <div id="adOverlay"></div>
+</div>
 
-  <div id="videos" class="grid"></div>
+<!-- TITLE -->
+<h1 id="videoTitle" class="video-title"></h1>
 
-  <div class="pagination">
-    <button id="prevBtn">Prev</button>
-    <button id="nextBtn">Next</button>
-  </div>
+<div id="videos" class="grid"></div>
+
+<div class="pagination">
+  <button id="prevBtn">Prev</button>
+  <button id="nextBtn">Next</button>
+</div>
+
 </div>
 
 <footer>© 2026 Powered by Videy</footer>
@@ -208,73 +209,65 @@ video::-moz-media-controls-fullscreen-button{display:none!important;}
 <script>
 const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const HOME_PER_PAGE=12;
+
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
+/* DOM */
 const list=document.getElementById("videos");
 const playerBox=document.getElementById("playerBox");
-const player=document.getElementById("player");
-const videoInfo=document.getElementById("videoInfo");
-const videoTitle=document.getElementById("videoTitle");
+const iframe=document.getElementById("playerFrame");
+const titleEl=document.getElementById("videoTitle");
+const fsBtn=document.getElementById("fullscreenBtn");
+const centerPlay=document.getElementById("centerPlay");
 const adOverlay=document.getElementById("adOverlay");
 const adBanner=document.getElementById("adBanner");
-const fullscreenBtn=document.getElementById("fullscreenBtn");
-const centerPlay=document.getElementById("centerPlay");
 const prevBtn=document.getElementById("prevBtn");
 const nextBtn=document.getElementById("nextBtn");
 
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
+let VIDEOS=[],currentPage=1;
 let firstPlayAd=true;
-let cardClickAd=true;
 
+/* ADS */
 centerPlay.onclick=()=>{
   if(firstPlayAd){
     window.open(AD_LINK,"_blank");
     firstPlayAd=false;
   }
-  player.play();
+  playerBox.classList.add("playing");
 };
 
-let overlayTimer=null;
 function showOverlay(){
   adOverlay.style.display="block";
   adOverlay.onclick=()=>{
     window.open(AD_LINK,"_blank");
     adOverlay.style.display="none";
-    clearTimeout(overlayTimer);
-    overlayTimer=setTimeout(showOverlay,25000);
+    setTimeout(showOverlay,25000);
   };
 }
-player.addEventListener("play",()=>{
-  clearTimeout(overlayTimer);
-  overlayTimer=setTimeout(showOverlay,25000);
-});
-
-let bannerTimer=null;
 function showBanner(){
   adBanner.style.display="block";
-  adBanner.onclick=(e)=>{
+  adBanner.onclick=e=>{
     e.stopPropagation();
     window.open(AD_LINK,"_blank");
     adBanner.style.display="none";
-    clearTimeout(bannerTimer);
-    bannerTimer=setTimeout(showBanner,30000);
+    setTimeout(showBanner,30000);
   };
 }
-player.addEventListener("play",()=>{
-  clearTimeout(bannerTimer);
-  bannerTimer=setTimeout(showBanner,30000);
-});
 
-player.addEventListener("play",()=>playerBox.classList.add("playing"));
-player.addEventListener("pause",()=>playerBox.classList.remove("playing"));
+/* FULLSCREEN */
+fsBtn.onclick=()=>{
+  playerBox.classList.toggle("fullscreen");
+};
 
-fullscreenBtn.onclick=()=>playerBox.classList.toggle("fullscreen");
-
-let VIDEOS=[];
-let currentPage=1;
+/* ROUTER */
+function getVideoId(){
+  const m=location.hash.match(/^#\/e\/([\w]+)/);
+  return m?m[1]:null;
+}
 
 function renderPage(page){
   list.innerHTML="";
@@ -282,65 +275,40 @@ function renderPage(page){
   const end=page*HOME_PER_PAGE;
   VIDEOS.slice(start,end).forEach(v=>{
     const c=document.createElement("div");
-    c.className="card show";
+    c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
     c.onclick=()=>{
-      if(cardClickAd){
-        window.open(AD_LINK,"_blank");
-        cardClickAd=false;
-        setTimeout(()=>cardClickAd=true,1000);
-      }
+      window.open(AD_LINK,"_blank");
       location.hash=`/e/${v.embed}`;
     };
     list.appendChild(c);
   });
 }
 
-prevBtn.onclick=()=>{if(currentPage>1){currentPage--;renderPage(currentPage);}};
-nextBtn.onclick=()=>{if(currentPage*HOME_PER_PAGE<VIDEOS.length){currentPage++;renderPage(currentPage);}};
-
-function getVideoId(){
-  const m=location.hash.match(/^#\/e\/([\w]+)/);
-  return m?m[1]:null;
-}
-
-function renderRandomCards(excludeId,count=12){
-  list.innerHTML="";
-  const filtered=VIDEOS.filter(v=>v.embed!==excludeId);
-  for(let i=0;i<count;i++){
-    const v=filtered[Math.floor(Math.random()*filtered.length)];
-    const c=document.createElement("div");
-    c.className="card show";
-    c.innerHTML=`<div class="thumb"></div><div class="info"><p class="title">${v.title}</p></div>`;
-    c.onclick=()=>{
-      if(cardClickAd){
-        window.open(AD_LINK,"_blank");
-        cardClickAd=false;
-        setTimeout(()=>cardClickAd=true,1000);
-      }
-      location.hash=`/e/${v.embed}`;
-    };
-    list.appendChild(c);
-  }
-}
-
 function handleRoute(){
   const id=getVideoId();
   if(!id){
     playerBox.style.display="none";
-    videoInfo.style.display="none";
+    titleEl.style.display="none";
     renderPage(currentPage);
     return;
   }
+
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v) return;
-  player.src=`https://cdn.videy.co/${id}.mp4`;
+
   playerBox.style.display="block";
-  videoInfo.style.display="block";
-  videoTitle.textContent=v.title;
+  titleEl.style.display="block";
+  titleEl.textContent=v.title;
+
+  iframe.src=`https://cdn.videy.co/${id}.mp4`;
   firstPlayAd=true;
-  renderRandomCards(id);
+  setTimeout(showOverlay,25000);
+  setTimeout(showBanner,30000);
 }
+
+prevBtn.onclick=()=>{if(currentPage>1){currentPage--;renderPage(currentPage)}}
+nextBtn.onclick=()=>{if(currentPage*HOME_PER_PAGE<VIDEOS.length){currentPage++;renderPage(currentPage)}}
 
 fetch(API_JSON)
 .then(r=>r.json())
@@ -349,8 +317,8 @@ fetch(API_JSON)
   renderPage(currentPage);
   handleRoute();
 });
-
 window.addEventListener("hashchange",handleRoute);
 </script>
+
 </body>
 </html>
