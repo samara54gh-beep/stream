@@ -6,53 +6,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+/* === CSS TIDAK DIUBAH STRUKTUR, CUMA OVERLAY === */
 :root{
   --bg:#0b0b0f;
   --accent:#e50914;
   --text:#fff;
 }
 *{box-sizing:border-box}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:system-ui;
-}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
 header{background:#000;border-bottom:1px solid #1f1f2a}
-.header-inner{
-  max-width:1200px;margin:auto;
-  padding:14px 20px;
-  display:flex;justify-content:space-between
-}
+.header-inner{max-width:1200px;margin:auto;padding:14px 20px;display:flex;justify-content:space-between}
 .logo{font-size:22px;font-weight:700;color:var(--accent);text-decoration:none}
 .container{max-width:1200px;margin:auto;padding:16px}
 
-/* PLAYER */
-.player{
-  display:none;
-  position:relative;
-  background:#000;
-  border-radius:16px;
-  overflow:hidden;
-  margin-bottom:12px;
-}
-.video-box{
-  position:relative;
-  width:100%;
-  aspect-ratio:16/9;
-  background:#000;
-}
-video{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
+.player{display:none;position:relative;background:#000;border-radius:16px;overflow:hidden;margin-bottom:12px}
+.video-box{position:relative;width:100%;aspect-ratio:16/9}
+video{width:100%;height:100%;object-fit:contain}
 
-/* OVERLAY PLAY (SEKALI SAJA) */
+/* UI OVERLAY */
 #tapOverlay{
   position:absolute;
   inset:0;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
   font-size:64px;
@@ -61,22 +36,9 @@ video{
   z-index:6;
 }
 
-/* FULLSCREEN */
-#fsBtn{
-  position:absolute;
-  top:12px;
-  right:12px;
-  z-index:8;
-  background:#e50914;
-  color:#fff;
-  border:none;
-  padding:6px 10px;
-  border-radius:6px;
-  font-size:13px;
-  cursor:pointer;
-}
+#fsBtn{position:absolute;top:12px;right:12px;z-index:8;background:#e50914;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:13px;cursor:pointer}
 
-/* ADS BANNER */
+/* BANNER */
 #adBanner{
   position:absolute;
   top:12px;
@@ -93,80 +55,24 @@ video{
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
 
-/* CONTROLS */
 .seek{width:100%}
-.controls{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  padding:10px;
-  background:#050507;
-}
-.controls button{
-  background:var(--accent);
-  border:none;
-  color:#fff;
-  padding:8px 14px;
-  font-size:14px;
-  border-radius:8px;
-  cursor:pointer;
-}
+.controls{display:flex;gap:12px;justify-content:center;padding:10px;background:#050507}
+.controls button{background:var(--accent);border:none;color:#fff;padding:8px 14px;font-size:14px;border-radius:8px;cursor:pointer}
 
-/* TITLE */
-.video-title{
-  display:none;
-  margin:10px 4px 16px;
-  font-size:18px;
-  font-weight:600;
-}
+.video-title{display:none;margin:10px 4px 16px;font-size:18px;font-weight:600}
 
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:14px;
-}
-.card{
-  background:#12121a;
-  border-radius:14px;
-  cursor:pointer;
-  overflow:hidden;
-}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.card{background:#12121a;border-radius:14px;cursor:pointer;overflow:hidden}
 .thumb{padding-top:56.25%;background:#000;position:relative}
-.thumb::after{
-  content:"VIDEY";
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--accent);
-}
+.thumb::after{content:"VIDEY";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent)}
 .info{padding:10px}
-.title{
-  font-size:13px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis
-}
+.title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.pagination{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  margin:16px 0
-}
-.pagination button{
-  padding:6px 12px;
-  background:var(--accent);
-  border:none;
-  color:#fff;
-  border-radius:6px;
-  cursor:pointer
-}
+.pagination{display:flex;justify-content:center;gap:10px;margin:16px 0}
+.pagination button{padding:6px 12px;background:var(--accent);border:none;color:#fff;border-radius:6px;cursor:pointer}
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* BROWSER FULLSCREEN */
+/* FULLSCREEN */
 body.browser-fs{overflow:hidden}
 body.browser-fs header,
 body.browser-fs footer,
@@ -174,16 +80,7 @@ body.browser-fs .pagination,
 body.browser-fs #videos,
 body.browser-fs .video-title{display:none!important}
 body.browser-fs .container{padding:0;max-width:none}
-body.browser-fs .player{
-  display:block;
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  margin:0;
-  border-radius:0;
-  z-index:9999;
-}
+body.browser-fs .player{display:block;position:fixed;inset:0;width:100vw;height:100vh;margin:0;border-radius:0;z-index:9999}
 body.browser-fs .controls{position:absolute;bottom:0;left:0;right:0}
 body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0}
 </style>
@@ -230,12 +127,9 @@ body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0}
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
+const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
-
-const HOME_PER_PAGE=12;
-const STREAM_RECOMMEND=6;
 
 const video=document.getElementById("video");
 const tapOverlay=document.getElementById("tapOverlay");
@@ -255,36 +149,42 @@ const pagination=document.querySelector(".pagination");
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-let VIDEOS=[],page=1;
-let adsTimer=null;
+let VIDEOS=[],page=1,adsTimer=null;
+let adsOverlayOnce=!sessionStorage.getItem("adsOnce");
 
-/* BANNER ADS NORMAL */
+/* BANNER ADS */
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
-    if(video.paused || document.hidden) return;
+    if(video.paused||document.hidden) return;
     adBanner.style.display="block";
     setTimeout(()=>adBanner.style.display="none",12000);
   },35000);
 }
 
-/* OVERLAY SEKALI SAJA */
-if(sessionStorage.getItem("overlayOncePlayed")){
-  tapOverlay.style.display="none";
-}
-
-tapOverlay.onclick=async()=>{
-  sessionStorage.setItem("overlayOncePlayed","1");
-  tapOverlay.style.display="none";
-  window.open(AD_LINK,"_blank");
-  await video.play();
-  playPause.textContent="⏸ Pause";
-  startAdsTimer();
+/* ADS OVERLAY SEKALI */
+tapOverlay.onclick=()=>{
+  if(adsOverlayOnce){
+    adsOverlayOnce=false;
+    sessionStorage.setItem("adsOnce","1");
+    window.open(AD_LINK,"_blank");
+  }
+  video.play();
 };
 
+/* PAUSE UI */
+video.addEventListener("pause",()=>{
+  tapOverlay.style.display="flex";
+  playPause.textContent="▶ Play";
+});
+video.addEventListener("play",()=>{
+  tapOverlay.style.display="none";
+  playPause.textContent="⏸ Pause";
+  startAdsTimer();
+});
+
 /* CONTROLS */
-video.onclick=()=>video.paused?(video.play(),playPause.textContent="⏸ Pause"):(video.pause(),playPause.textContent="▶ Play");
-playPause.onclick=()=>video.onclick();
+video.onclick=()=>video.paused?video.play():video.pause();
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
 forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
 video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
@@ -297,36 +197,27 @@ fsBtn.onclick=()=>{
 };
 
 /* ROUTER */
-function getId(){
-  const m=location.hash.match(/^#\/e\/([\w]+)/);
-  return m?m[1]:null;
-}
-function shuffle(a){return a.slice().sort(()=>Math.random()-0.5);}
+function getId(){const m=location.hash.match(/^#\/e\/([\w]+)/);return m?m[1]:null}
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
 
 function renderHome(){
   list.innerHTML="";
-  shuffle(VIDEOS).slice((page-1)*HOME_PER_PAGE,page*HOME_PER_PAGE).forEach(v=>{
+  shuffle(VIDEOS).slice((page-1)*12,page*12).forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
-    c.onclick=()=>{
-      window.open(AD_LINK,"_blank");
-      location.href=`/#/e/${v.embed}`;
-    };
+    c.onclick=()=>{window.open(AD_LINK,"_blank");location.href=`/#/e/${v.embed}`};
     list.appendChild(c);
   });
 }
 
 function renderRecommend(){
   list.innerHTML="";
-  shuffle(VIDEOS).slice(0,STREAM_RECOMMEND).forEach(v=>{
+  shuffle(VIDEOS).slice(0,6).forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
-    c.onclick=()=>{
-      window.open(AD_LINK,"_blank");
-      location.href=`/#/e/${v.embed}`;
-    };
+    c.onclick=()=>{window.open(AD_LINK,"_blank");location.href=`/#/e/${v.embed}`};
     list.appendChild(c);
   });
 }
@@ -345,23 +236,18 @@ function route(){
   }
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v) return;
-
   playerBox.style.display="block";
   titleEl.style.display="block";
   pagination.style.display="none";
   titleEl.textContent=v.title;
   video.src=`https://cdn.videy.co/${id}.mp4`;
-
   renderRecommend();
 }
 
 prevBtn.onclick=()=>{if(page>1){page--;renderHome();}};
-nextBtn.onclick=()=>{if(page*HOME_PER_PAGE<VIDEOS.length){page++;renderHome();}};
+nextBtn.onclick=()=>{if(page*12<VIDEOS.length){page++;renderHome();}};
 
-fetch(API_JSON).then(r=>r.json()).then(j=>{
-  VIDEOS=j.videos;
-  route();
-});
+fetch(API_JSON).then(r=>r.json()).then(j=>{VIDEOS=j.videos;route();});
 window.addEventListener("hashchange",route);
 </script>
 
