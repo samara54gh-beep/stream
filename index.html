@@ -45,24 +45,23 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 video{
   width:100%;
   height:100%;
-  background:#000;
   object-fit:contain;
 }
 
-/* OVERLAY UI (TRANSPARAN) */
+/* OVERLAY PLAY (SEKALI SAJA) */
 #tapOverlay{
   position:absolute;
   inset:0;
-  display:none;
+  display:flex;
   align-items:center;
   justify-content:center;
   font-size:64px;
-  background:rgba(0,0,0,.15);
+  background:rgba(0,0,0,.25);
   cursor:pointer;
   z-index:6;
 }
 
-/* FULLSCREEN BUTTON */
+/* FULLSCREEN */
 #fsBtn{
   position:absolute;
   top:12px;
@@ -184,11 +183,9 @@ body.browser-fs .player{
   margin:0;
   border-radius:0;
   z-index:9999;
-  background:#000;
 }
-body.browser-fs .video-box{width:100%;height:100%}
-body.browser-fs .controls{position:absolute;bottom:0;left:0;right:0;z-index:20}
-body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0;z-index:19}
+body.browser-fs .controls{position:absolute;bottom:0;left:0;right:0}
+body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0}
 </style>
 </head>
 
@@ -239,7 +236,6 @@ const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/
 
 const HOME_PER_PAGE=12;
 const STREAM_RECOMMEND=6;
-const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
 const video=document.getElementById("video");
 const tapOverlay=document.getElementById("tapOverlay");
@@ -259,62 +255,34 @@ const pagination=document.querySelector(".pagination");
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-let tapCount=0, unlocked=false;
 let VIDEOS=[],page=1;
 let adsTimer=null;
-const ADS_INTERVAL=25000;
 
-/* PATCH: MODE OVERLAY */
-let overlayMode="ui";
-
-/* banner delay 35 detik */
-let bannerReady=false;
-setTimeout(()=>bannerReady=true,35000);
-
-/* ADS TIMER (TANPA OVERLAY) */
+/* BANNER ADS NORMAL */
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
-    if(!bannerReady) return;
     if(video.paused || document.hidden) return;
-
-    overlayMode="ads";
     adBanner.style.display="block";
-    unlocked=false;
-    tapCount=0;
-  },ADS_INTERVAL);
+    setTimeout(()=>adBanner.style.display="none",12000);
+  },35000);
 }
 
-/* OVERLAY UI ONLY */
-video.addEventListener("pause",()=>{
-  overlayMode="ui";
-  tapOverlay.style.display="flex";
-});
-video.addEventListener("play",()=>{
+/* OVERLAY SEKALI SAJA */
+if(sessionStorage.getItem("overlayOncePlayed")){
   tapOverlay.style.display="none";
-});
+}
 
 tapOverlay.onclick=async()=>{
-  if(overlayMode==="ui"){
-    video.play();
-    playPause.textContent="⏸ Pause";
-    return;
-  }
-
-  tapCount++;
-  if(tapCount < (isMobile?3:1)) return;
-
-  adBanner.style.display="none";
-  if(!unlocked){
-    window.open(AD_LINK,"_blank");
-    unlocked=true;
-  }
-
-  video.play();
+  sessionStorage.setItem("overlayOncePlayed","1");
+  tapOverlay.style.display="none";
+  window.open(AD_LINK,"_blank");
+  await video.play();
   playPause.textContent="⏸ Pause";
   startAdsTimer();
 };
 
+/* CONTROLS */
 video.onclick=()=>video.paused?(video.play(),playPause.textContent="⏸ Pause"):(video.pause(),playPause.textContent="▶ Play");
 playPause.onclick=()=>video.onclick();
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
@@ -383,11 +351,6 @@ function route(){
   pagination.style.display="none";
   titleEl.textContent=v.title;
   video.src=`https://cdn.videy.co/${id}.mp4`;
-
-  tapOverlay.style.display="flex";
-  adBanner.style.display="none";
-  overlayMode="ui";
-  unlocked=false;
 
   renderRecommend();
 }
