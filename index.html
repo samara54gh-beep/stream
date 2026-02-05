@@ -62,6 +62,21 @@ video{
   z-index:6;
 }
 
+/* FULLSCREEN BUTTON */
+#fsBtn{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:8;
+  background:rgba(0,0,0,.6);
+  color:#fff;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:13px;
+  cursor:pointer;
+}
+
 /* BANNER ADS */
 #adBanner{
   position:absolute;
@@ -96,19 +111,6 @@ video{
   font-size:14px;
   border-radius:8px;
   cursor:pointer;
-}
-
-/* FULLSCREEN BTN */
-#fsBtn{
-  position:absolute;
-  bottom:90px;
-  right:12px;
-  z-index:8;
-  background:var(--accent);
-  color:#fff;
-  border:none;
-  padding:6px 10px;
-  border-radius:6px;
 }
 
 /* TITLE */
@@ -183,7 +185,7 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
     <video id="video" playsinline preload="metadata"></video>
     <div id="tapOverlay">▶</div>
     <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
-    <button id="fsBtn">⛶</button>
+    <button id="fsBtn">Fullscreen</button>
   </div>
 
   <input id="seek" class="seek" type="range" min="0" value="0">
@@ -239,7 +241,7 @@ adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 let tapCount=0, unlocked=false;
 let VIDEOS=[],page=1;
 
-/* OVERLAY PLAY — 3x TAP DI HP */
+/* OVERLAY PLAY (3x tap mobile) */
 tapOverlay.onclick=async()=>{
   tapCount++;
   if(tapCount < (isMobile?3:1)) return;
@@ -260,24 +262,19 @@ forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTim
 video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
 seek.oninput=()=>video.currentTime=seek.value;
 
-/* FULLSCREEN REAL + EXIT */
+/* REAL FULLSCREEN */
 fsBtn.onclick=()=>{
   if(!document.fullscreenElement){
     playerBox.requestFullscreen();
-    fsBtn.textContent="✖";
+    fsBtn.textContent="Exit Fullscreen";
   }else{
     document.exitFullscreen();
-    fsBtn.textContent="⛶";
+    fsBtn.textContent="Fullscreen";
   }
 };
 document.addEventListener("fullscreenchange",()=>{
-  if(!document.fullscreenElement){
-    fsBtn.textContent="⛶";
-  }
+  if(!document.fullscreenElement) fsBtn.textContent="Fullscreen";
 });
-
-/* ADS */
-setTimeout(()=>adBanner.style.display="block",25000);
 
 /* ROUTER */
 function getId(){
