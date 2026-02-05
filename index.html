@@ -62,12 +62,41 @@ video{
   z-index:6;
 }
 
-/* FULLSCREEN */
+/* EXPAND MODE (ANTI FULLSCREEN BUG) */
+.player.expanded{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  z-index:9999;
+  margin:0;
+  border-radius:0;
+  background:#000;
+}
+.player.expanded .video-box{
+  height:calc(100vh - 110px);
+}
+.player.expanded .seek{
+  position:absolute;
+  bottom:56px;
+  left:0;
+  right:0;
+  z-index:20;
+}
+.player.expanded .controls{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:21;
+}
+
+/* BUTTON */
 #fsBtn{
   position:absolute;
   top:12px;
   right:12px;
-  z-index:8;
+  z-index:30;
   background:#e50914;
   color:#fff;
   border:none;
@@ -90,7 +119,7 @@ video{
   border-radius:12px;
   overflow:hidden;
   display:none;
-  z-index:7;
+  z-index:25;
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
 
@@ -182,13 +211,7 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
 <div id="playerBox" class="player">
   <div class="video-box">
-    <video id="video"
-      playsinline
-      webkit-playsinline
-      controlslist="nodownload"
-      preload="metadata">
-    </video>
-
+    <video id="video" playsinline preload="metadata"></video>
     <div id="tapOverlay">▶</div>
     <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
     <button id="fsBtn">Fullscreen</button>
@@ -204,7 +227,6 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 </div>
 
 <h1 id="videoTitle" class="video-title"></h1>
-
 <div id="videos" class="grid"></div>
 
 <div class="pagination">
@@ -223,17 +245,14 @@ const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/
 
 const video=document.getElementById("video");
 const fsBtn=document.getElementById("fsBtn");
+const playerBox=document.getElementById("playerBox");
 
-/* ✅ FULLSCREEN FIX — TELEGRAM X & FACEBOOK */
-fsBtn.onclick = () => {
-  // PRIORITAS VIDEO (PALING AMAN)
-  if (video.requestFullscreen) {
-    video.requestFullscreen();
-  }
-  // iOS / Telegram / Facebook WebView
-  else if (video.webkitEnterFullscreen) {
-    video.webkitEnterFullscreen();
-  }
+/* EXPAND MODE TOGGLE */
+fsBtn.onclick=()=>{
+  playerBox.classList.toggle("expanded");
+  fsBtn.textContent = playerBox.classList.contains("expanded")
+    ? "Exit"
+    : "Fullscreen";
 };
 </script>
 
