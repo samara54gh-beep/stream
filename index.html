@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Videy Streaming</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 :root{
@@ -12,87 +12,169 @@
   --text:#fff;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui;
+}
 header{background:#000;border-bottom:1px solid #1f1f2a}
-.header-inner{max-width:1200px;margin:auto;padding:14px 20px;display:flex;justify-content:space-between}
+.header-inner{
+  max-width:1200px;margin:auto;
+  padding:14px 20px;
+  display:flex;justify-content:space-between
+}
 .logo{font-size:22px;font-weight:700;color:var(--accent);text-decoration:none}
 .container{max-width:1200px;margin:auto;padding:16px}
 
 /* PLAYER */
-.player{display:none;position:relative;background:#000;border-radius:16px;overflow:hidden;margin-bottom:16px}
-.video-box{position:relative;width:100%;aspect-ratio:16/9}
-video{width:100%;height:100%;object-fit:contain;background:#000}
-
-/* FULLSCREEN */
+.player{
+  display:none;
+  position:relative;
+  background:#000;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
 .player.fullscreen{
-  position:fixed;inset:0;
-  width:100vw;height:100vh;
-  z-index:9999;border-radius:0
-}
-.player.fullscreen video{height:100vh}
-
-#fsBtn{
-  position:absolute;top:10px;right:10px;
-  z-index:10;
-  background:var(--accent);border:none;color:#fff;
-  padding:6px 10px;border-radius:6px;cursor:pointer
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  z-index:9999;
+  border-radius:0;
 }
 
-/* ADS */
-#adOverlay{position:absolute;inset:0;display:none;z-index:6}
+.video-box{
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+  position:relative;
+}
+video{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#000;
+}
+
+/* FULLSCREEN BTN */
+#fullscreenBtn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:20;
+  background:var(--accent);
+  border:none;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* ADS IN VIDEO */
+#adOverlay{
+  position:absolute;
+  inset:0;
+  display:none;
+  background:rgba(0,0,0,.15);
+  cursor:pointer;
+  z-index:5;
+}
 #adBanner{
-  position:absolute;top:10px;left:50%;
+  position:absolute;
+  top:10px;
+  left:50%;
   transform:translateX(-50%);
-  width:90%;max-width:600px;height:80px;
-  background:#000;border-radius:12px;
-  overflow:hidden;display:none;z-index:7
+  width:90%;
+  max-width:600px;
+  height:80px;
+  background:#000;
+  border-radius:12px;
+  overflow:hidden;
+  display:none;
+  z-index:6;
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
 
 /* SEEK BAR */
-.seek-wrap{padding:10px;background:#050507}
-.seek-wrap input{width:100%}
-.seek-time{display:flex;justify-content:space-between;font-size:12px;color:#aaa}
+.seek-wrap{
+  padding:8px 12px;
+  background:#050507;
+}
+#seek{
+  width:100%;
+}
 
 /* CONTROLS */
 .controls{
-  display:flex;gap:12px;
+  display:flex;
+  gap:12px;
   justify-content:center;
-  padding:12px;background:#050507
+  padding:10px;
+  background:#050507;
 }
 .controls button{
   background:var(--accent);
-  border:none;color:#fff;
+  border:none;
+  color:#fff;
   padding:8px 14px;
-  border-radius:8px;cursor:pointer
+  font-size:14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* TITLE */
+.video-title{
+  display:none;
+  margin:10px 4px 16px;
+  font-size:18px;
+  font-weight:600;
 }
 
 /* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:14px
+  gap:14px;
 }
 .card{
   background:#12121a;
   border-radius:14px;
   cursor:pointer;
-  overflow:hidden
+  overflow:hidden;
 }
 .thumb{padding-top:56.25%;background:#000;position:relative}
 .thumb::after{
   content:"VIDEY";
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  color:var(--accent)
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent);
 }
 .info{padding:10px}
-.title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title{
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
 
-.pagination{display:flex;justify-content:center;gap:10px;margin:16px 0}
+.pagination{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:16px 0
+}
 .pagination button{
-  padding:6px 12px;background:var(--accent);
-  border:none;color:#fff;border-radius:6px;cursor:pointer
+  padding:6px 12px;
+  background:var(--accent);
+  border:none;
+  color:#fff;
+  border-radius:6px;
+  cursor:pointer
 }
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 </style>
@@ -102,7 +184,7 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
 <header>
   <div class="header-inner">
-    <a class="logo">VIDEY</a>
+    <a href="/" class="logo">VIDEY</a>
     <span style="font-size:13px;color:#aaa">Video Streaming</span>
   </div>
 </header>
@@ -110,21 +192,21 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 <div class="container">
 
 <div id="playerBox" class="player">
-  <button id="fsBtn">Fullscreen</button>
-
   <div class="video-box">
-    <video id="video" preload="metadata"></video>
+    <video id="video"
+      playsinline
+      webkit-playsinline
+      preload="metadata">
+    </video>
+
+    <button id="fullscreenBtn">⛶</button>
     <div id="adOverlay"></div>
     <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
   </div>
 
   <!-- SEEK BAR -->
   <div class="seek-wrap">
-    <input id="seekBar" type="range" min="0" value="0" step="1">
-    <div class="seek-time">
-      <span id="cur">0:00</span>
-      <span id="dur">0:00</span>
-    </div>
+    <input type="range" id="seek" min="0" value="0">
   </div>
 
   <!-- CONTROLS -->
@@ -135,7 +217,7 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
   </div>
 </div>
 
-<h1 id="videoTitle" style="display:none"></h1>
+<h1 id="videoTitle" class="video-title"></h1>
 
 <div id="videos" class="grid"></div>
 
@@ -149,87 +231,99 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
+const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const PER_PAGE=12;
+
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
+/* DOM */
 const list=document.getElementById("videos");
-const player=document.getElementById("playerBox");
+const playerBox=document.getElementById("playerBox");
 const video=document.getElementById("video");
 const titleEl=document.getElementById("videoTitle");
-
 const playPause=document.getElementById("playPause");
 const back10=document.getElementById("back10");
 const forward10=document.getElementById("forward10");
-const seek=document.getElementById("seekBar");
-const cur=document.getElementById("cur");
-const dur=document.getElementById("dur");
-
+const seek=document.getElementById("seek");
+const fsBtn=document.getElementById("fullscreenBtn");
 const adOverlay=document.getElementById("adOverlay");
 const adBanner=document.getElementById("adBanner");
-const fsBtn=document.getElementById("fsBtn");
 const prevBtn=document.getElementById("prevBtn");
 const nextBtn=document.getElementById("nextBtn");
 
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-let VIDEOS=[],page=1,firstPlayAd=true;
+let VIDEOS=[],page=1;
+let firstPlayAd=true;
+
+/* SAFE PLAY FOR MOBILE */
+function safePlay(){
+  if(video.currentTime===0) video.currentTime=0.01;
+  const p=video.play();
+  if(p) p.catch(()=>setTimeout(()=>video.play(),300));
+}
 
 /* CONTROLS */
 playPause.onclick=()=>{
   if(video.paused){
-    if(firstPlayAd){window.open(AD_LINK,"_blank");firstPlayAd=false}
-    video.play();playPause.textContent="⏸ Pause";
+    if(firstPlayAd){
+      window.open(AD_LINK,"_blank");
+      firstPlayAd=false;
+    }
+    safePlay();
+    playPause.textContent="⏸ Pause";
   }else{
-    video.pause();playPause.textContent="▶ Play";
+    video.pause();
+    playPause.textContent="▶ Play";
   }
 };
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
 forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
 
 /* SEEK */
-video.ontimeupdate=()=>{
+video.addEventListener("timeupdate",()=>{
+  seek.max=video.duration||0;
   seek.value=video.currentTime;
-  cur.textContent=format(video.currentTime);
-};
-video.onloadedmetadata=()=>{
-  seek.max=video.duration;
-  dur.textContent=format(video.duration);
-};
+});
 seek.oninput=()=>video.currentTime=seek.value;
 
+/* FULLSCREEN */
+fsBtn.onclick=()=>{
+  playerBox.classList.toggle("fullscreen");
+  fsBtn.textContent=playerBox.classList.contains("fullscreen")?"✕":"⛶";
+};
+
 /* ADS */
-function overlayAd(){
+function showOverlay(){
   adOverlay.style.display="block";
   adOverlay.onclick=()=>{
     window.open(AD_LINK,"_blank");
     adOverlay.style.display="none";
-    setTimeout(overlayAd,25000);
+    setTimeout(showOverlay,25000);
   };
 }
-function bannerAd(){
+function showBanner(){
   adBanner.style.display="block";
   adBanner.onclick=e=>{
     e.stopPropagation();
     window.open(AD_LINK,"_blank");
     adBanner.style.display="none";
-    setTimeout(bannerAd,30000);
+    setTimeout(showBanner,30000);
   };
 }
 
-/* FULLSCREEN */
-fsBtn.onclick=()=>{
-  player.classList.toggle("fullscreen");
-  fsBtn.textContent=player.classList.contains("fullscreen")?"Exit":"Fullscreen";
-};
-
 /* ROUTER */
-function id(){const m=location.hash.match(/^#\/e\/([\w]+)/);return m?m[1]:null}
+function getId(){
+  const m=location.hash.match(/^#\/e\/([\w]+)/);
+  return m?m[1]:null;
+}
 function render(){
   list.innerHTML="";
-  VIDEOS.slice((page-1)*PER_PAGE,page*PER_PAGE).forEach(v=>{
+  const s=(page-1)*PER_PAGE;
+  const e=page*PER_PAGE;
+  VIDEOS.slice(s,e).forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
@@ -241,33 +335,38 @@ function render(){
   });
 }
 function route(){
-  const vid=id();
-  if(!vid){player.style.display="none";titleEl.style.display="none";render();return}
-  const v=VIDEOS.find(x=>x.embed===vid);
-  if(!v)return;
-  player.style.display="block";
+  const id=getId();
+  if(!id){
+    playerBox.style.display="none";
+    titleEl.style.display="none";
+    render();
+    return;
+  }
+  const v=VIDEOS.find(x=>x.embed===id);
+  if(!v) return;
+
+  playerBox.style.display="block";
   titleEl.style.display="block";
   titleEl.textContent=v.title;
-  video.src=`https://cdn.videy.co/${vid}.mp4`;
+
+  video.pause();
+  video.src=`https://cdn.videy.co/${id}.mp4`;
+  playPause.textContent="▶ Play";
   firstPlayAd=true;
-  setTimeout(overlayAd,20000);
-  setTimeout(bannerAd,25000);
+
+  setTimeout(showOverlay,20000);
+  setTimeout(showBanner,25000);
 }
 
-prevBtn.onclick=()=>{if(page>1){page--;render()}}
-nextBtn.onclick=()=>{if(page*PER_PAGE<VIDEOS.length){page++;render()}}
+prevBtn.onclick=()=>{if(page>1){page--;render()}};
+nextBtn.onclick=()=>{if(page*PER_PAGE<VIDEOS.length){page++;render()}};
 
 fetch(API_JSON).then(r=>r.json()).then(j=>{
   VIDEOS=j.videos;
-  render();route();
+  render();
+  route();
 });
 window.addEventListener("hashchange",route);
-
-function format(t){
-  const m=Math.floor(t/60);
-  const s=Math.floor(t%60).toString().padStart(2,"0");
-  return `${m}:${s}`;
-}
 </script>
 
 </body>
