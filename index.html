@@ -28,25 +28,46 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .container{max-width:1200px;margin:auto;padding:16px}
 
 /* PLAYER */
-.player{display:none;margin-bottom:14px}
-.video-wrap{
-  position:relative;
+.player{
+  display:none;
   background:#000;
   border-radius:16px;
   overflow:hidden;
+  margin-bottom:12px;
+  position:relative;
+}
+.video-box{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
 }
 video{
   width:100%;
-  aspect-ratio:16/9;
+  height:100%;
   object-fit:contain;
   background:#000;
 }
 
-/* OVERLAY TAP */
-#tapOverlay{
+/* START OVERLAY */
+#startOverlay{
   position:absolute;
   inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  font-weight:700;
+  cursor:pointer;
   z-index:5;
+}
+
+/* TAP LAYER */
+#tapLayer{
+  position:absolute;
+  inset:0;
+  z-index:4;
 }
 
 /* BANNER INSIDE VIDEO */
@@ -56,10 +77,10 @@ video{
   left:50%;
   transform:translateX(-50%);
   width:90%;
-  max-width:600px;
-  height:70px;
+  max-width:420px;
+  height:60px;
   background:#000;
-  border-radius:12px;
+  border-radius:10px;
   overflow:hidden;
   display:none;
   z-index:6;
@@ -67,8 +88,10 @@ video{
 #adBanner img{width:100%;height:100%;object-fit:cover}
 
 /* SEEK */
-.seek-box{padding:8px}
-.seek-box input{
+.seek{
+  padding:6px 10px;
+}
+.seek input{
   width:100%;
 }
 
@@ -78,35 +101,30 @@ video{
   gap:10px;
   justify-content:center;
   padding:10px;
+  background:#050507;
 }
 .controls button{
   background:var(--accent);
   border:none;
   color:#fff;
   padding:8px 14px;
+  font-size:14px;
   border-radius:8px;
   cursor:pointer;
 }
 
-/* FULLSCREEN BTN */
+/* FULLSCREEN */
 #fsBtn{
   position:absolute;
-  bottom:12px;
-  right:12px;
-  z-index:7;
-  background:rgba(0,0,0,.6);
-  color:#fff;
+  right:10px;
+  bottom:10px;
+  z-index:10;
+  background:var(--accent);
   border:none;
+  color:#fff;
   padding:6px 10px;
   border-radius:6px;
-}
-
-/* TITLE */
-.video-title{
-  display:none;
-  margin:10px 4px 14px;
-  font-size:18px;
-  font-weight:600;
+  cursor:pointer;
 }
 
 /* GRID */
@@ -132,7 +150,12 @@ video{
   color:var(--accent);
 }
 .info{padding:10px}
-.title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title{
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
 
 .pagination{
   display:flex;
@@ -164,27 +187,26 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 <div class="container">
 
 <div id="playerBox" class="player">
-  <div class="video-wrap" id="videoWrap">
-    <video id="video" playsinline webkit-playsinline preload="auto"></video>
-    <div id="tapOverlay"></div>
+
+  <div class="video-box">
+    <video id="video" playsinline webkit-playsinline preload="metadata"></video>
+    <div id="tapLayer"></div>
+    <div id="startOverlay">▶ PLAY</div>
+    <a id="adBanner" target="_blank"></a>
     <button id="fsBtn">⛶</button>
-    <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
   </div>
 
-  <!-- SEEK -->
-  <div class="seek-box">
+  <div class="seek">
     <input type="range" id="seek" value="0">
   </div>
 
-  <!-- CONTROLS -->
   <div class="controls">
     <button id="back10">⏪ 10s</button>
-    <button id="playPause">▶ Play</button>
+    <button id="playPause">▶</button>
     <button id="forward10">⏩ 10s</button>
   </div>
-</div>
 
-<h1 id="videoTitle" class="video-title"></h1>
+</div>
 
 <div id="videos" class="grid"></div>
 
@@ -198,83 +220,72 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-/* CONFIG */
 const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
-const PER_PAGE=12;
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
-/* DOM */
-const list=videos;
 const video=document.getElementById("video");
-const playerBox=document.getElementById("playerBox");
-const titleEl=videoTitle;
+const overlay=document.getElementById("startOverlay");
+const tapLayer=document.getElementById("tapLayer");
 const playPause=document.getElementById("playPause");
-const back10=document.getElementById("back10");
-const forward10=document.getElementById("forward10");
 const seek=document.getElementById("seek");
-const tapOverlay=document.getElementById("tapOverlay");
 const fsBtn=document.getElementById("fsBtn");
 const adBanner=document.getElementById("adBanner");
+const playerBox=document.getElementById("playerBox");
+const list=document.getElementById("videos");
 
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-let VIDEOS=[],page=1;
-let firstPlayAd=true;
+const isTouch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
+let started=false,lastTap=0;
 
-/* SAFE PLAY (FIX HP) */
-function safePlay(){
-  if(video.currentTime<0.3) video.currentTime=0.3;
-  video.muted=true;
-  const p=video.play();
-  if(p) p.then(()=>setTimeout(()=>video.muted=false,300));
+/* START */
+overlay.addEventListener(isTouch?"touchend":"click",()=>{
+  if(started)return;
+  if(isTouch){
+    const n=Date.now();
+    if(n-lastTap<350)start();
+    lastTap=n;
+  }else start();
+});
+function start(){
+  overlay.style.display="none";
+  video.play();
+  started=true;
+  playPause.textContent="⏸";
+  setTimeout(showBanner,30000);
+}
+
+/* TAP VIDEO */
+tapLayer.addEventListener(isTouch?"touchend":"click",()=>{
+  if(!started)return;
+  if(isTouch){
+    const n=Date.now();
+    if(n-lastTap<300)video.currentTime+=10;
+    else toggle();
+    lastTap=n;
+  }else toggle();
+});
+function toggle(){
+  video.paused?(video.play(),playPause.textContent="⏸"):(video.pause(),playPause.textContent="▶");
 }
 
 /* CONTROLS */
-playPause.onclick=()=>{
-  if(video.paused){
-    if(firstPlayAd){
-      window.open(AD_LINK,"_blank");
-      firstPlayAd=false;
-    }
-    safePlay();
-    playPause.textContent="⏸ Pause";
-  }else{
-    video.pause();
-    playPause.textContent="▶ Play";
-  }
-};
-back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
-forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
+playPause.onclick=toggle;
+document.getElementById("back10").onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
+document.getElementById("forward10").onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
 
 /* SEEK */
-video.ontimeupdate=()=>{
-  seek.max=video.duration||0;
-  seek.value=video.currentTime;
-};
-seek.oninput=()=>video.currentTime=seek.value;
-
-/* TAP / DOUBLE TAP */
-let lastTap=0;
-tapOverlay.onclick=()=>{
-  const now=Date.now();
-  if(now-lastTap<300){
-    if(video.paused) safePlay(); else video.pause();
-  }
-  lastTap=now;
-};
+video.ontimeupdate=()=>seek.value=(video.currentTime/video.duration)*100||0;
+seek.oninput=()=>video.currentTime=(seek.value/100)*video.duration;
 
 /* FULLSCREEN */
 fsBtn.onclick=()=>{
-  if(!document.fullscreenElement){
-    playerBox.requestFullscreen();
-  }else{
-    document.exitFullscreen();
-  }
+  !document.fullscreenElement?playerBox.requestFullscreen():document.exitFullscreen();
 };
 
-/* BANNER LOOP */
+/* ADS */
 function showBanner(){
   adBanner.style.display="block";
   adBanner.onclick=()=>{
@@ -284,15 +295,15 @@ function showBanner(){
   };
 }
 
-/* ROUTER */
-function getId(){
-  const m=location.hash.match(/^#\/e\/([\w]+)/);
-  return m?m[1]:null;
-}
-
+/* LIST */
+let VIDEOS=[],page=1;
+fetch(API_JSON).then(r=>r.json()).then(j=>{
+  VIDEOS=j.videos;
+  render();
+});
 function render(){
   list.innerHTML="";
-  VIDEOS.slice((page-1)*PER_PAGE,page*PER_PAGE).forEach(v=>{
+  VIDEOS.slice((page-1)*12,page*12).forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
@@ -303,37 +314,14 @@ function render(){
     list.appendChild(c);
   });
 }
-
-function route(){
-  const id=getId();
-  if(!id){
-    playerBox.style.display="none";
-    titleEl.style.display="none";
-    render();
-    return;
-  }
-  const v=VIDEOS.find(x=>x.embed===id);
-  if(!v) return;
-
+window.onhashchange=()=>{
+  const id=location.hash.split("/e/")[1];
+  if(!id)return;
   playerBox.style.display="block";
-  titleEl.style.display="block";
-  titleEl.textContent=v.title;
-
-  video.pause();
   video.src=`https://cdn.videy.co/${id}.mp4`;
-  playPause.textContent="▶ Play";
-  firstPlayAd=true;
-
-  setTimeout(showBanner,25000);
-}
-
-prevBtn.onclick=()=>{if(page>1){page--;render()}};
-nextBtn.onclick=()=>{if(page*PER_PAGE<VIDEOS.length){page++;render()}};
-
-fetch(API_JSON)
-.then(r=>r.json())
-.then(j=>{VIDEOS=j.videos;render();route()});
-window.addEventListener("hashchange",route);
+  overlay.style.display="flex";
+  started=false;
+};
 </script>
 
 </body>
