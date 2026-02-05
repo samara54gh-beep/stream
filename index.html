@@ -49,21 +49,20 @@ video{
   object-fit:contain;
 }
 
-/* OVERLAY – TRANSPARAN */
+/* OVERLAY UI (TRANSPARAN) */
 #tapOverlay{
   position:absolute;
   inset:0;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
-  font-size:72px;
-  color:#fff;
-  background:transparent; /* PATCH */
+  font-size:64px;
+  background:rgba(0,0,0,.15);
   cursor:pointer;
   z-index:6;
 }
 
-/* FULLSCREEN */
+/* FULLSCREEN BUTTON */
 #fsBtn{
   position:absolute;
   top:12px;
@@ -166,7 +165,6 @@ video{
   border-radius:6px;
   cursor:pointer
 }
-
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
 /* BROWSER FULLSCREEN */
@@ -195,6 +193,7 @@ body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0;z-index:19}
 </head>
 
 <body>
+
 <header>
   <div class="header-inner">
     <a href="/" class="logo">VIDEY</a>
@@ -203,35 +202,38 @@ body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0;z-index:19}
 </header>
 
 <div class="container">
-  <div id="playerBox" class="player">
-    <div class="video-box">
-      <video id="video" playsinline preload="metadata"></video>
-      <div id="tapOverlay">▶</div>
-      <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
-      <button id="fsBtn">Fullscreen</button>
-    </div>
 
-    <input id="seek" class="seek" type="range" min="0" value="0">
-    <div class="controls">
-      <button id="back10">⏪ 10s</button>
-      <button id="playPause">▶ Play</button>
-      <button id="forward10">⏩ 10s</button>
-    </div>
+<div id="playerBox" class="player">
+  <div class="video-box">
+    <video id="video" playsinline preload="metadata"></video>
+    <div id="tapOverlay">▶</div>
+    <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
+    <button id="fsBtn">Fullscreen</button>
   </div>
 
-  <h1 id="videoTitle" class="video-title"></h1>
-  <div id="videos" class="grid"></div>
+  <input id="seek" class="seek" type="range" min="0" value="0">
 
-  <div class="pagination">
-    <button id="prevBtn">Prev</button>
-    <button id="nextBtn">Next</button>
+  <div class="controls">
+    <button id="back10">⏪ 10s</button>
+    <button id="playPause">▶ Play</button>
+    <button id="forward10">⏩ 10s</button>
   </div>
+</div>
+
+<h1 id="videoTitle" class="video-title"></h1>
+<div id="videos" class="grid"></div>
+
+<div class="pagination">
+  <button id="prevBtn">Prev</button>
+  <button id="nextBtn">Next</button>
+</div>
+
 </div>
 
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
+const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
@@ -262,63 +264,62 @@ let VIDEOS=[],page=1;
 let adsTimer=null;
 const ADS_INTERVAL=25000;
 
-/* banner delay */
+/* PATCH: MODE OVERLAY */
+let overlayMode="ui";
+
+/* banner delay 35 detik */
 let bannerReady=false;
 setTimeout(()=>bannerReady=true,35000);
 
+/* ADS TIMER (TANPA OVERLAY) */
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
     if(!bannerReady) return;
     if(video.paused || document.hidden) return;
-    tapOverlay.style.display="flex";
+
+    overlayMode="ads";
     adBanner.style.display="block";
     unlocked=false;
     tapCount=0;
   },ADS_INTERVAL);
 }
 
-/* OVERLAY CLICK */
+/* OVERLAY UI ONLY */
+video.addEventListener("pause",()=>{
+  overlayMode="ui";
+  tapOverlay.style.display="flex";
+});
+video.addEventListener("play",()=>{
+  tapOverlay.style.display="none";
+});
+
 tapOverlay.onclick=async()=>{
+  if(overlayMode==="ui"){
+    video.play();
+    playPause.textContent="⏸ Pause";
+    return;
+  }
+
   tapCount++;
   if(tapCount < (isMobile?3:1)) return;
-  tapOverlay.style.display="none";
+
   adBanner.style.display="none";
-  tapCount=0;
   if(!unlocked){
     window.open(AD_LINK,"_blank");
     unlocked=true;
   }
-  try{
-    video.muted=true;
-    await video.play();
-    video.pause();
-    video.muted=false;
-    video.play();
-    playPause.textContent="⏸ Pause";
-    startAdsTimer();
-  }catch(e){}
+
+  video.play();
+  playPause.textContent="⏸ Pause";
+  startAdsTimer();
 };
 
-/* PAUSE / PLAY → OVERLAY MUNCUL */
-video.addEventListener("pause",()=>{
-  tapOverlay.style.display="flex";
-  playPause.textContent="▶ Play";
-});
-video.addEventListener("play",()=>{
-  tapOverlay.style.display="none";
-  playPause.textContent="⏸ Pause";
-});
-
-video.onclick=()=>video.paused?video.play():video.pause();
+video.onclick=()=>video.paused?(video.play(),playPause.textContent="⏸ Pause"):(video.pause(),playPause.textContent="▶ Play");
 playPause.onclick=()=>video.onclick();
-
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
 forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
-video.addEventListener("timeupdate",()=>{
-  seek.max=video.duration||0;
-  seek.value=video.currentTime;
-});
+video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
 seek.oninput=()=>video.currentTime=seek.value;
 
 /* FULLSCREEN */
@@ -347,6 +348,7 @@ function renderHome(){
     list.appendChild(c);
   });
 }
+
 function renderRecommend(){
   list.innerHTML="";
   shuffle(VIDEOS).slice(0,STREAM_RECOMMEND).forEach(v=>{
@@ -375,14 +377,18 @@ function route(){
   }
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v) return;
+
   playerBox.style.display="block";
   titleEl.style.display="block";
   pagination.style.display="none";
   titleEl.textContent=v.title;
   video.src=`https://cdn.videy.co/${id}.mp4`;
+
   tapOverlay.style.display="flex";
   adBanner.style.display="none";
+  overlayMode="ui";
   unlocked=false;
+
   renderRecommend();
 }
 
@@ -395,5 +401,6 @@ fetch(API_JSON).then(r=>r.json()).then(j=>{
 });
 window.addEventListener("hashchange",route);
 </script>
+
 </body>
 </html>
