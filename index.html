@@ -165,11 +165,14 @@ let firstPlay=true;
 /* BANNER TIMER */
 function startAdsTimer(){
   clearInterval(adsTimer);
-  adsTimer=setInterval(()=>{
-    if(video.paused||document.hidden) return;
-    adBanner.style.display="block";
-    setTimeout(()=>adBanner.style.display="none",12000);
-  },35000);
+
+  adsTimer = setInterval(()=>{
+    if(video.paused || document.hidden) return;
+
+    // munculin banner
+    adBanner.style.display = "block";
+
+  }, 35000);
 }
 
 /* OVERLAY */
