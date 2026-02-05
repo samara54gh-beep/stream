@@ -45,8 +45,8 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 video{
   width:100%;
   height:100%;
-  object-fit:contain;
   background:#000;
+  object-fit:contain;
 }
 
 /* OVERLAY PLAY */
@@ -67,8 +67,8 @@ video{
   position:absolute;
   top:12px;
   right:12px;
-  z-index:20;
-  background:#000;
+  z-index:8;
+  background:#e50914;
   color:#fff;
   border:none;
   padding:6px 10px;
@@ -76,6 +76,23 @@ video{
   font-size:13px;
   cursor:pointer;
 }
+
+/* BANNER ADS */
+#adBanner{
+  position:absolute;
+  top:12px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  max-width:600px;
+  height:80px;
+  background:#000;
+  border-radius:12px;
+  overflow:hidden;
+  display:none;
+  z-index:7;
+}
+#adBanner img{width:100%;height:100%;object-fit:cover}
 
 /* CONTROLS */
 .seek{width:100%}
@@ -148,45 +165,42 @@ video{
   border-radius:6px;
   cursor:pointer
 }
+footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* ================= FULLSCREEN FIX ================= */
+/* ===== FULLSCREEN FIX (DOM TETAP ADA) ===== */
 .player:fullscreen{
   width:100vw;
   height:100vh;
+  margin:0;
   border-radius:0;
   background:#000;
 }
-
 .player:fullscreen .video-box{
   width:100%;
   height:100%;
 }
-
 .player:fullscreen video{
   width:100%;
   height:100%;
 }
-
+.player:fullscreen #tapOverlay{z-index:30}
+.player:fullscreen #adBanner{z-index:25}
+.player:fullscreen #fsBtn{z-index:40}
 .player:fullscreen .controls{
   position:absolute;
   bottom:0;
   left:0;
   right:0;
-  z-index:20;
+  z-index:35;
 }
-
-.player:fullscreen #tapOverlay{
-  z-index:19;
+.player:fullscreen .seek{
+  position:absolute;
+  bottom:56px;
+  left:0;
+  right:0;
+  z-index:34;
 }
-
-.player:fullscreen #fsBtn{
-  top:12px;
-  right:12px;
-  z-index:21;
-}
-/* ================================================= */
-
-footer{text-align:center;padding:18px;color:#777;font-size:13px}
+/* ===== END FIX ===== */
 </style>
 </head>
 
@@ -205,6 +219,7 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
   <div class="video-box">
     <video id="video" playsinline preload="metadata"></video>
     <div id="tapOverlay">▶</div>
+    <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
     <button id="fsBtn">Fullscreen</button>
   </div>
 
@@ -231,6 +246,14 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
+const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
+const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
+const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
+
+const HOME_PER_PAGE = 12;
+const STREAM_RECOMMEND = 6;
+const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
+
 /* DOM (JANGAN DIHAPUS) */
 const video=document.getElementById("video");
 const tapOverlay=document.getElementById("tapOverlay");
@@ -240,12 +263,31 @@ const forward10=document.getElementById("forward10");
 const seek=document.getElementById("seek");
 const fsBtn=document.getElementById("fsBtn");
 const playerBox=document.getElementById("playerBox");
+const adBanner=document.getElementById("adBanner");
+const titleEl=document.getElementById("videoTitle");
+const list=document.getElementById("videos");
+const prevBtn=document.getElementById("prevBtn");
+const nextBtn=document.getElementById("nextBtn");
+const pagination=document.querySelector(".pagination");
 
-/* BASIC PLAYER */
-tapOverlay.onclick=()=>{
+adBanner.href=AD_LINK;
+adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
+
+let tapCount=0, unlocked=false;
+let VIDEOS=[],page=1;
+
+/* OVERLAY PLAY */
+tapOverlay.onclick=async()=>{
+  tapCount++;
+  if(tapCount < (isMobile?3:1)) return;
   tapOverlay.style.display="none";
-  video.play();
-  playPause.textContent="⏸ Pause";
+  tapCount=0;
+  if(!unlocked){window.open(AD_LINK,"_blank");unlocked=true;}
+  try{
+    video.muted=true;await video.play();
+    video.pause();video.muted=false;video.play();
+    playPause.textContent="⏸ Pause";
+  }catch(e){}
 };
 
 video.onclick=()=>video.paused?(video.play(),playPause.textContent="⏸ Pause"):(video.pause(),playPause.textContent="▶ Play");
@@ -268,6 +310,71 @@ fsBtn.onclick=()=>{
 document.addEventListener("fullscreenchange",()=>{
   if(!document.fullscreenElement) fsBtn.textContent="Fullscreen";
 });
+
+/* ROUTER */
+function getId(){
+  const m=location.hash.match(/^#\/e\/([\w]+)/);
+  return m?m[1]:null;
+}
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5);}
+
+function renderHome(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice((page-1)*HOME_PER_PAGE,page*HOME_PER_PAGE).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=`/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function renderRecommend(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice(0,STREAM_RECOMMEND).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=`/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function route(){
+  const id=getId();
+  if(!id){
+    playerBox.style.display="none";
+    titleEl.style.display="none";
+    pagination.style.display="flex";
+    renderHome();
+    return;
+  }
+  const v=VIDEOS.find(x=>x.embed===id);
+  if(!v) return;
+  playerBox.style.display="block";
+  titleEl.style.display="block";
+  pagination.style.display="none";
+  titleEl.textContent=v.title;
+  video.src=`https://cdn.videy.co/${id}.mp4`;
+  tapOverlay.style.display="flex";
+  unlocked=false;
+  renderRecommend();
+}
+
+prevBtn.onclick=()=>{if(page>1){page--;renderHome();}};
+nextBtn.onclick=()=>{if(page*HOME_PER_PAGE<VIDEOS.length){page++;renderHome();}};
+
+fetch(API_JSON).then(r=>r.json()).then(j=>{
+  VIDEOS=j.videos;
+  route();
+});
+window.addEventListener("hashchange",route);
 </script>
 
 </body>
