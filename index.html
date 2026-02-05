@@ -62,7 +62,7 @@ video{
   z-index:6;
 }
 
-/* FULLSCREEN */
+/* FULLSCREEN BUTTON */
 #fsBtn{
   position:absolute;
   top:12px;
@@ -75,6 +75,11 @@ video{
   border-radius:6px;
   font-size:13px;
   cursor:pointer;
+}
+
+/* hide fullscreen button on mobile */
+@media (max-width:768px){
+  #fsBtn{display:none}
 }
 
 /* ADS BANNER */
@@ -167,7 +172,7 @@ video{
 }
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* FULLSCREEN FIX */
+/* FULLSCREEN MODE (DESKTOP ONLY) */
 .player:fullscreen{
   width:100vw;
   height:100vh;
@@ -179,10 +184,14 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 .player:fullscreen #adBanner{z-index:25}
 .player:fullscreen #fsBtn{z-index:40}
 .player:fullscreen .controls{
-  position:absolute;bottom:0;left:0;right:0;z-index:35
+  position:absolute;
+  bottom:0;left:0;right:0;
+  z-index:35
 }
 .player:fullscreen .seek{
-  position:absolute;bottom:56px;left:0;right:0;z-index:34
+  position:absolute;
+  bottom:56px;left:0;right:0;
+  z-index:34
 }
 </style>
 </head>
@@ -236,6 +245,7 @@ const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/
 const HOME_PER_PAGE=12;
 const STREAM_RECOMMEND=6;
 const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
+const isDesktop=!isMobile;
 
 const video=document.getElementById("video");
 const tapOverlay=document.getElementById("tapOverlay");
@@ -304,10 +314,12 @@ forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTim
 video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
 seek.oninput=()=>video.currentTime=seek.value;
 
-/* FULLSCREEN */
+/* FULLSCREEN DESKTOP ONLY */
 fsBtn.onclick=()=>{
+  if(!isDesktop) return;
+
   if(!document.fullscreenElement){
-    playerBox.requestFullscreen();
+    playerBox.requestFullscreen({navigationUI:"hide"});
     fsBtn.textContent="Exit Fullscreen";
   }else{
     document.exitFullscreen();
