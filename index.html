@@ -6,87 +6,127 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-:root{--bg:#0b0b0f;--accent:#e50914;--text:#fff}
+:root{
+  --bg:#0b0b0f;
+  --accent:#e50914;
+  --text:#fff;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-header{background:#000;border-bottom:1px solid #1f1f2a}
-.header-inner{max-width:1200px;margin:auto;padding:14px 20px;display:flex;justify-content:space-between}
-.logo{font-size:22px;font-weight:700;color:var(--accent);text-decoration:none}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui;
+}
 .container{max-width:1200px;margin:auto;padding:16px}
 
 /* PLAYER */
-.player{display:none;background:#000;border-radius:16px;overflow:hidden;margin-bottom:12px}
-.video-box{position:relative;width:100%;aspect-ratio:16/9;background:#000}
-video{width:100%;height:100%;object-fit:contain;background:#000}
+.player{
+  display:none;
+  background:#000;
+  border-radius:16px;
+  overflow:hidden;
+  position:relative;
+}
+.video-box{
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+  position:relative;
+}
+video{
+  width:100%;
+  height:100%;
+  background:#000;
+  object-fit:contain;
+}
 
-/* OVERLAY PLAY */
-#tapOverlay{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:64px;background:rgba(0,0,0,.45);
-  cursor:pointer;z-index:10
+/* PLAY OVERLAY */
+#playOverlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:56px;
+  background:rgba(0,0,0,.4);
+  cursor:pointer;
+  z-index:5;
 }
 
 /* ADS OVERLAY */
 #adOverlay{
-  position:absolute;inset:0;
-  display:none;background:rgba(0,0,0,.35);
-  cursor:pointer;z-index:9
-}
-#adBanner{
   position:absolute;
-  top:14px;left:50%;transform:translateX(-50%);
-  width:90%;max-width:600px;height:80px;
-  background:#000;border-radius:12px;
-  overflow:hidden;display:none;z-index:11
+  inset:0;
+  display:none;
+  background:rgba(0,0,0,.2);
+  cursor:pointer;
+  z-index:6;
 }
-#adBanner img{width:100%;height:100%;object-fit:cover}
-
-/* SEEK BAR */
-.seek-wrap{padding:10px;background:#050507}
-input[type=range]{width:100%}
 
 /* CONTROLS */
-.controls{display:flex;gap:12px;justify-content:center;padding:10px;background:#050507}
+.controls{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  padding:10px;
+  background:#050507;
+}
 .controls button{
-  background:var(--accent);border:none;color:#fff;
-  padding:8px 14px;border-radius:8px;cursor:pointer
+  background:var(--accent);
+  border:none;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
 }
 
-/* GRID */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
-.card{background:#12121a;border-radius:14px;cursor:pointer;overflow:hidden}
-.thumb{padding-top:56.25%;background:#000;position:relative}
-.thumb::after{content:"VIDEY";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent)}
-.info{padding:10px}
-.title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* SEEK */
+.seek{
+  width:100%;
+  padding:8px;
+  background:#050507;
+}
+.seek input{width:100%}
 
-footer{text-align:center;padding:18px;color:#777;font-size:13px}
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+}
+.card{
+  background:#12121a;
+  border-radius:14px;
+  cursor:pointer;
+}
+.thumb{padding-top:56.25%;background:#000;position:relative}
+.thumb::after{
+  content:"VIDEY";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent);
+}
+.info{padding:10px}
 </style>
 </head>
 
 <body>
 
-<header>
-  <div class="header-inner">
-    <a href="/" class="logo">VIDEY</a>
-    <span style="font-size:13px;color:#aaa">Video Streaming</span>
-  </div>
-</header>
-
 <div class="container">
 
 <div id="playerBox" class="player">
   <div class="video-box">
-    <video id="video" playsinline webkit-playsinline preload="metadata"></video>
-
-    <div id="tapOverlay">PLAY</div>
+    <video id="video" playsinline preload="metadata"></video>
+    <div id="playOverlay">▶</div>
     <div id="adOverlay"></div>
-    <a id="adBanner" target="_blank" rel="nofollow sponsored"></a>
   </div>
 
-  <div class="seek-wrap">
-    <input id="seekBar" type="range" min="0" max="100" value="0">
+  <div class="seek">
+    <input type="range" id="seekBar" min="0" max="100" value="0">
   </div>
 
   <div class="controls">
@@ -100,80 +140,70 @@ footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
 </div>
 
-<footer>© 2026 Powered by Videy</footer>
-
 <script>
-/* CONFIG */
 const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
-const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
 /* DOM */
 const video=document.getElementById("video");
-const tapOverlay=document.getElementById("tapOverlay");
+const playerBox=document.getElementById("playerBox");
+const playOverlay=document.getElementById("playOverlay");
 const adOverlay=document.getElementById("adOverlay");
-const adBanner=document.getElementById("adBanner");
 const playPause=document.getElementById("playPause");
-const seekBar=document.getElementById("seekBar");
 const back10=document.getElementById("back10");
 const forward10=document.getElementById("forward10");
+const seekBar=document.getElementById("seekBar");
 const list=document.getElementById("videos");
-const playerBox=document.getElementById("playerBox");
 
-adBanner.href=AD_LINK;
-adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
-
-/* DETECT HP */
-const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
 let tapCount=0;
 
-/* PLAY OVERLAY */
-tapOverlay.onclick=()=>{
+/* TAP LOGIC */
+playOverlay.onclick=()=>{
   tapCount++;
-  if((!isMobile && tapCount>=1) || (isMobile && tapCount>=2)){
-    tapOverlay.style.display="none";
+
+  if(tapCount===1){
+    video.muted=true;
+    video.play().catch(()=>{});
+    video.pause();
+  }
+
+  if(tapCount===2){
+    video.muted=false;
     video.play();
+    playOverlay.style.display="none";
     playPause.textContent="⏸ Pause";
   }
+
+  if(tapCount===4){
+    adOverlay.style.display="block";
+  }
+};
+
+/* ADS */
+adOverlay.onclick=()=>{
+  window.open(AD_LINK,"_blank");
+  adOverlay.style.display="none";
 };
 
 /* CONTROLS */
 playPause.onclick=()=>{
-  if(video.paused){video.play();playPause.textContent="⏸ Pause"}
-  else{video.pause();playPause.textContent="▶ Play"}
+  if(video.paused){
+    video.play();
+    playPause.textContent="⏸ Pause";
+  }else{
+    video.pause();
+    playPause.textContent="▶ Play";
+  }
 };
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
-forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
+forward10.onclick=()=>video.currentTime+=10;
 
 /* SEEK */
-video.addEventListener("timeupdate",()=>{
-  seekBar.value=(video.currentTime/video.duration)*100||0
-});
-seekBar.oninput=()=>{
-  video.currentTime=(seekBar.value/100)*video.duration
+video.ontimeupdate=()=>{
+  seekBar.value=(video.currentTime/video.duration)*100||0;
 };
-
-/* ADS RULE 1 — TIME BASED */
-let adsTimerStarted=false,adsCooldown=false;
-
-video.addEventListener("play",()=>{
-  if(adsTimerStarted) return;
-  adsTimerStarted=true;
-
-  setTimeout(()=>{
-    if(adsCooldown) return;
-    video.pause();
-    adOverlay.style.display="block";
-    adBanner.style.display="block";
-  },30000);
-});
-
-adOverlay.onclick=()=>{
-  window.open(AD_LINK,"_blank");
-  adOverlay.style.display="none";
-  adBanner.style.display="none";
-  video.play();
-  adsCooldown=true;
+seekBar.oninput=()=>{
+  video.currentTime=(seekBar.value/100)*video.duration;
 };
 
 /* ROUTER */
@@ -182,24 +212,33 @@ function getId(){
   return m?m[1]:null;
 }
 
-fetch(API_JSON).then(r=>r.json()).then(j=>{
+function route(){
+  const id=getId();
+  if(!id) return;
+
+  playerBox.style.display="block";
+  tapCount=0;
+  playOverlay.style.display="flex";
+  adOverlay.style.display="none";
+  video.src=`https://cdn.videy.co/${id}.mp4`;
+}
+
+fetch(API_JSON)
+.then(r=>r.json())
+.then(j=>{
   j.videos.forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
-    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.innerHTML=`<div class="thumb"></div><div class="info">${v.title}</div>`;
     c.onclick=()=>{
       window.open(AD_LINK,"_blank");
       location.hash=`/e/${v.embed}`;
     };
     list.appendChild(c);
   });
-
-  const id=getId();
-  if(id){
-    playerBox.style.display="block";
-    video.src=`https://cdn.videy.co/${id}.mp4`;
-  }
+  route();
 });
+window.addEventListener("hashchange",route);
 </script>
 
 </body>
