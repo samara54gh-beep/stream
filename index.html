@@ -32,12 +32,12 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   display:none;
   position:relative;
   background:#000;
-  border-radius:16px;
+  border-radius:18px;
   overflow:hidden;
-  margin-bottom:12px;
+  margin-bottom:14px;
 }
 
-/* iframe wrapper */
+/* iframe */
 .iframe-box{
   width:100%;
   height:520px;
@@ -52,13 +52,13 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   border:0;
 }
 
-/* portrait center */
+/* portrait */
 .player.portrait .iframe-box{
   max-width:520px;
   margin:auto;
 }
 
-/* fullscreen fake */
+/* fake fullscreen */
 .player.fullscreen{
   position:fixed;
   inset:0;
@@ -68,33 +68,32 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   border-radius:0;
 }
 .player.fullscreen .iframe-box{height:100vh}
-@media (orientation:landscape){
-  .player.fullscreen iframe{object-fit:contain}
-}
-@media (orientation:portrait){
-  .player.fullscreen iframe{object-fit:cover}
-}
 
-/* UI */
+/* fullscreen button */
 #fullscreenBtn{
-  position:absolute;top:10px;right:10px;
-  z-index:10;
-  background:var(--accent);
-  border:none;color:#fff;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
+  position:absolute;
+  top:14px;
+  right:14px;
+  z-index:20;
 
-/* ===== TITLE (STREAM PAGE ONLY) ===== */
-.video-title{
-  display:none;
-  margin:10px 4px 18px;
-  font-size:18px;
+  background:rgba(0,0,0,.65);
+  color:#fff;
+  border:none;
+  border-radius:999px;
+  padding:10px 14px;
+  font-size:14px;
   font-weight:600;
+  cursor:pointer;
+  backdrop-filter:blur(6px);
+}
+@media(max-width:768px){
+  #fullscreenBtn{
+    padding:14px 18px;
+    font-size:16px;
+  }
 }
 
-/* ADS */
+/* center play */
 #centerPlay{
   position:absolute;
   inset:0;
@@ -108,6 +107,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 }
 .player.playing #centerPlay{display:none}
 
+/* ADS */
 #adOverlay{
   position:absolute;
   inset:0;
@@ -116,7 +116,6 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   background:rgba(0,0,0,.15);
   cursor:pointer;
 }
-
 #adBanner{
   position:absolute;
   bottom:16px;
@@ -132,6 +131,14 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   z-index:6;
 }
 #adBanner img{width:100%;height:100%;object-fit:cover}
+
+/* title */
+.video-title{
+  display:none;
+  margin:10px 4px 18px;
+  font-size:18px;
+  font-weight:600;
+}
 
 /* cards */
 .grid{
@@ -151,18 +158,37 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .thumb::after{
   content:"VIDEY";
   position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   color:var(--accent);
+  font-weight:700;
 }
 .info{padding:12px}
 .title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pagination{display:flex;justify-content:center;gap:12px;margin:16px 0}
-.pagination button{
-  padding:6px 10px;background:var(--accent);
-  border:none;color:#fff;border-radius:6px;cursor:pointer
+
+.pagination{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin:18px 0;
 }
-footer{text-align:center;padding:20px;color:#777;font-size:13px}
+.pagination button{
+  padding:8px 14px;
+  background:var(--accent);
+  border:none;
+  color:#fff;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+footer{
+  text-align:center;
+  padding:20px;
+  color:#777;
+  font-size:13px;
+}
 </style>
 </head>
 
@@ -192,7 +218,6 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
   <div id="adOverlay"></div>
 </div>
 
-<!-- TITLE -->
 <h1 id="videoTitle" class="video-title"></h1>
 
 <div id="videos" class="grid"></div>
@@ -208,34 +233,34 @@ footer{text-align:center;padding:20px;color:#777;font-size:13px}
 
 <script>
 const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
-const HOME_PER_PAGE=12;
+const HOME_PER_PAGE = 12;
 
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
 /* DOM */
-const list=document.getElementById("videos");
-const playerBox=document.getElementById("playerBox");
-const iframe=document.getElementById("playerFrame");
-const titleEl=document.getElementById("videoTitle");
-const fsBtn=document.getElementById("fullscreenBtn");
-const centerPlay=document.getElementById("centerPlay");
-const adOverlay=document.getElementById("adOverlay");
-const adBanner=document.getElementById("adBanner");
-const prevBtn=document.getElementById("prevBtn");
-const nextBtn=document.getElementById("nextBtn");
+const list = document.getElementById("videos");
+const playerBox = document.getElementById("playerBox");
+const iframe = document.getElementById("playerFrame");
+const titleEl = document.getElementById("videoTitle");
+const fsBtn = document.getElementById("fullscreenBtn");
+const centerPlay = document.getElementById("centerPlay");
+const adOverlay = document.getElementById("adOverlay");
+const adBanner = document.getElementById("adBanner");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
 
-adBanner.href=AD_LINK;
-adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
+adBanner.href = AD_LINK;
+adBanner.innerHTML = `<img src="${BANNER_IMG}">`;
 
-let VIDEOS=[],currentPage=1;
-let firstPlayAd=true;
+let VIDEOS = [], currentPage = 1;
+let firstPlayAd = true;
 
 /* ADS */
-centerPlay.onclick=()=>{
+centerPlay.onclick = () => {
   if(firstPlayAd){
     window.open(AD_LINK,"_blank");
-    firstPlayAd=false;
+    firstPlayAd = false;
   }
   playerBox.classList.add("playing");
 };
@@ -259,14 +284,24 @@ function showBanner(){
 }
 
 /* FULLSCREEN */
-fsBtn.onclick=()=>{
-  playerBox.classList.toggle("fullscreen");
+fsBtn.onclick = () => {
+  if(!playerBox.classList.contains("fullscreen")){
+    playerBox.classList.add("fullscreen");
+    if(screen.orientation?.lock){
+      screen.orientation.lock("landscape").catch(()=>{});
+    }
+  }else{
+    playerBox.classList.remove("fullscreen");
+    if(screen.orientation?.unlock){
+      screen.orientation.unlock();
+    }
+  }
 };
 
 /* ROUTER */
 function getVideoId(){
-  const m=location.hash.match(/^#\/e\/([\w]+)/);
-  return m?m[1]:null;
+  const m = location.hash.match(/^#\/e\/([\w]+)/);
+  return m ? m[1] : null;
 }
 
 function renderPage(page){
