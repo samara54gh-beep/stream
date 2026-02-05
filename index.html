@@ -253,7 +253,7 @@ let VIDEOS=[],page=1;
 /* PLAYER */
 tapOverlay.onclick=async()=>{
   tapCount++;
-  if(tapCount < (isMobile?2:1)) return;
+  if(tapCount < (isMobile?3:1)) return;
   tapOverlay.style.display="none";
   tapCount=0;
   if(!unlocked){window.open(AD_LINK,"_blank");unlocked=true;}
