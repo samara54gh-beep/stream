@@ -62,41 +62,12 @@ video{
   z-index:6;
 }
 
-/* EXPAND MODE (ANTI FULLSCREEN BUG) */
-.player.expanded{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  z-index:9999;
-  margin:0;
-  border-radius:0;
-  background:#000;
-}
-.player.expanded .video-box{
-  height:calc(100vh - 110px);
-}
-.player.expanded .seek{
-  position:absolute;
-  bottom:56px;
-  left:0;
-  right:0;
-  z-index:20;
-}
-.player.expanded .controls{
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  z-index:21;
-}
-
-/* BUTTON */
+/* FULLSCREEN BUTTON */
 #fsBtn{
   position:absolute;
   top:12px;
   right:12px;
-  z-index:30;
+  z-index:40;
   background:#e50914;
   color:#fff;
   border:none;
@@ -106,7 +77,7 @@ video{
   cursor:pointer;
 }
 
-/* ADS */
+/* ADS BANNER */
 #adBanner{
   position:absolute;
   top:12px;
@@ -195,6 +166,37 @@ video{
   cursor:pointer
 }
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
+
+/* ========================= */
+/* EXPAND MODE (ANTI BUG APK) */
+/* ========================= */
+.player.expanded{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  z-index:9999;
+  margin:0;
+  border-radius:0;
+  background:#000;
+}
+.player.expanded .video-box{
+  height:calc(100vh - 110px);
+}
+.player.expanded .seek{
+  position:absolute;
+  bottom:56px;
+  left:0;
+  right:0;
+  z-index:34;
+}
+.player.expanded .controls{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:35;
+}
 </style>
 </head>
 
@@ -243,17 +245,154 @@ const API_JSON = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4O
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
+const HOME_PER_PAGE=12;
+const STREAM_RECOMMEND=6;
+const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
+
 const video=document.getElementById("video");
+const tapOverlay=document.getElementById("tapOverlay");
+const playPause=document.getElementById("playPause");
+const back10=document.getElementById("back10");
+const forward10=document.getElementById("forward10");
+const seek=document.getElementById("seek");
 const fsBtn=document.getElementById("fsBtn");
 const playerBox=document.getElementById("playerBox");
+const adBanner=document.getElementById("adBanner");
+const titleEl=document.getElementById("videoTitle");
+const list=document.getElementById("videos");
+const prevBtn=document.getElementById("prevBtn");
+const nextBtn=document.getElementById("nextBtn");
+const pagination=document.querySelector(".pagination");
 
-/* EXPAND MODE TOGGLE */
+adBanner.href=AD_LINK;
+adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
+
+let tapCount=0, unlocked=false;
+let VIDEOS=[],page=1;
+let adsTimer=null;
+const ADS_INTERVAL=25000;
+
+/* ADS TIMER */
+function startAdsTimer(){
+  clearInterval(adsTimer);
+  adsTimer=setInterval(()=>{
+    if(video.paused || document.hidden) return;
+    tapOverlay.style.display="flex";
+    adBanner.style.display="block";
+    unlocked=false;
+    tapCount=0;
+  },ADS_INTERVAL);
+}
+
+/* OVERLAY */
+tapOverlay.onclick=async()=>{
+  tapCount++;
+  if(tapCount < (isMobile?3:1)) return;
+
+  tapOverlay.style.display="none";
+  adBanner.style.display="none";
+  tapCount=0;
+
+  if(!unlocked){
+    window.open(AD_LINK,"_blank");
+    unlocked=true;
+  }
+
+  try{
+    video.muted=true;
+    await video.play();
+    video.pause();
+    video.muted=false;
+    video.play();
+    playPause.textContent="⏸ Pause";
+    startAdsTimer();
+  }catch(e){}
+};
+
+video.onclick=()=>video.paused?(video.play(),playPause.textContent="⏸ Pause"):(video.pause(),playPause.textContent="▶ Play");
+playPause.onclick=()=>video.onclick();
+back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
+forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
+video.addEventListener("timeupdate",()=>{seek.max=video.duration||0;seek.value=video.currentTime});
+seek.oninput=()=>video.currentTime=seek.value;
+
+/* EXPAND MODE (GANTI FULLSCREEN NATIVE) */
 fsBtn.onclick=()=>{
   playerBox.classList.toggle("expanded");
   fsBtn.textContent = playerBox.classList.contains("expanded")
     ? "Exit"
     : "Fullscreen";
 };
+
+/* ROUTER */
+function getId(){
+  const m=location.hash.match(/^#\/e\/([\w]+)/);
+  return m?m[1]:null;
+}
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5);}
+
+function renderHome(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice((page-1)*HOME_PER_PAGE,page*HOME_PER_PAGE).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=\`/#/e/\${v.embed}\`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function renderRecommend(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice(0,STREAM_RECOMMEND).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=\`/#/e/\${v.embed}\`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function route(){
+  const id=getId();
+  if(!id){
+    clearInterval(adsTimer);
+    playerBox.style.display="none";
+    titleEl.style.display="none";
+    pagination.style.display="flex";
+    renderHome();
+    return;
+  }
+  const v=VIDEOS.find(x=>x.embed===id);
+  if(!v) return;
+
+  playerBox.style.display="block";
+  titleEl.style.display="block";
+  pagination.style.display="none";
+  titleEl.textContent=v.title;
+  video.src=\`https://cdn.videy.co/\${id}.mp4\`;
+
+  tapOverlay.style.display="flex";
+  adBanner.style.display="block";
+  unlocked=false;
+
+  renderRecommend();
+}
+
+prevBtn.onclick=()=>{if(page>1){page--;renderHome();}};
+nextBtn.onclick=()=>{if(page*HOME_PER_PAGE<VIDEOS.length){page++;renderHome();}};
+
+fetch(API_JSON).then(r=>r.json()).then(j=>{
+  VIDEOS=j.videos;
+  route();
+});
+window.addEventListener("hashchange",route);
 </script>
 
 </body>
