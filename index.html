@@ -262,7 +262,7 @@ adBanner.onclick=()=>{
   window.open(AD_LINK,"_blank");
 };
 
-/* ADS TOMBOL 25s */
+/* ADS BUTTON 25s */
 function hookButtonAds(){
   const now=Date.now();
   if(now-lastBtnAdsTime<25000) return;
@@ -317,11 +317,12 @@ video.addEventListener("timeupdate",()=>{
 });
 seek.oninput=()=>video.currentTime=seek.value;
 
-/* FULLSCREEN */
+/* FULLSCREEN + ADS */
 fsBtn.onclick=()=>{
   hookButtonAds();
   document.body.classList.toggle("browser-fs");
-  fsBtn.textContent=document.body.classList.contains("browser-fs")?"Exit":"Fullscreen";
+  fsBtn.textContent=document.body.classList.contains("browser-fs")
+    ?"Exit":"Fullscreen";
 };
 
 /* ROUTER */
