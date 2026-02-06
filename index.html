@@ -94,18 +94,14 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 }
 
 /* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:14px;
-}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
 .card{background:#12121a;border-radius:14px;cursor:pointer;overflow:hidden}
 .thumb{padding-top:56.25%;background:#000;position:relative}
 .thumb::after{
   content:"VIDEO";
   position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
-  color:var(--accent);font-weight:700;
+  color:var(--accent);font-weight:700
 }
 .info{padding:10px}
 .title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -113,8 +109,11 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 /* PAGINATION */
 .pagination{display:flex;justify-content:center;gap:10px;margin:16px 0}
 .pagination button{
-  padding:6px 12px;background:var(--accent);
-  border:none;color:#fff;border-radius:6px;cursor:pointer;
+  padding:6px 12px;
+  background:var(--accent);
+  border:none;color:#fff;
+  border-radius:6px;
+  cursor:pointer
 }
 
 /* FOOTER */
@@ -126,8 +125,9 @@ body.browser-fs header,
 body.browser-fs footer,
 body.browser-fs .pagination,
 body.browser-fs #videos,
-body.browser-fs .video-title{display:none!important}
-
+body.browser-fs .video-title{
+  display:none!important;
+}
 body.browser-fs .container{padding:0;max-width:none}
 body.browser-fs .player{
   display:block;
@@ -139,18 +139,16 @@ body.browser-fs .player{
   border-radius:0;
   z-index:9999;
 }
-body.browser-fs video,
-body.browser-fs .video-box{
-  width:100%;
-  height:100%;
-}
+body.browser-fs .video-box,
+body.browser-fs video{width:100%;height:100%}
 body.browser-fs .controls{
   position:absolute;
   bottom:0;left:0;right:0;
 }
 body.browser-fs .seek{
   position:absolute;
-  bottom:56px;left:0;right:0;
+  bottom:56px;
+  left:0;right:0;
 }
 </style>
 </head>
@@ -196,10 +194,9 @@ body.browser-fs .seek{
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-/* ===== FIX VH REAL HP ===== */
+/* ===== REAL VH HP ===== */
 function setVH(){
-  const h = window.visualViewport ? visualViewport.height : window.innerHeight;
-  document.documentElement.style.setProperty('--vh',`${h*0.01}px`);
+  document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);
 }
 setVH();
 window.addEventListener('resize',setVH);
@@ -229,15 +226,19 @@ const pagination=document.querySelector(".pagination");
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-/* ===== ADS SYSTEM ===== */
-let lastAdsAction=0;
+/* ===== ADS TRIGGER SYSTEM ===== */
 const ADS_COOLDOWN=25000;
+let lastAdsAction=0;
 
 function triggerAdsByAction(){
   const now=Date.now();
   if(now-lastAdsAction<ADS_COOLDOWN) return;
   lastAdsAction=now;
+
   adBanner.style.display="block";
+  adBanner.style.opacity="0";
+  adBanner.style.transition="opacity .25s";
+  requestAnimationFrame(()=>adBanner.style.opacity="1");
 }
 
 adBanner.onclick=()=>{
@@ -245,35 +246,29 @@ adBanner.onclick=()=>{
   window.open(AD_LINK,"_blank");
 };
 
-function startBannerTimer(){
-  setInterval(()=>{
-    if(video.paused||document.hidden) return;
-    triggerAdsByAction();
-  },25000);
-}
-
 /* OVERLAY */
-let overlayOnce=true;
 tapOverlay.onclick=()=>{
-  if(overlayOnce){
-    overlayOnce=false;
-    window.open(AD_LINK,"_blank");
-  }
+  triggerAdsByAction();
   video.play();
 };
 
+video.addEventListener("loadedmetadata",()=>{
+  tapOverlay.style.display="flex";
+  playPause.textContent="▶ Play";
+  lastAdsAction=Date.now();
+});
+video.addEventListener("pause",()=>{
+  tapOverlay.style.display="flex";
+  playPause.textContent="▶ Play";
+});
 video.addEventListener("play",()=>{
   tapOverlay.style.display="none";
   playPause.textContent="⏸ Pause";
 });
 
-video.addEventListener("pause",()=>{
-  tapOverlay.style.display="flex";
-  playPause.textContent="▶ Play";
-});
-
-/* CONTROLS */
+/* CONTROLS + ADS */
 video.onclick=()=>video.paused?video.play():video.pause();
+
 back10.onclick=()=>{
   video.currentTime=Math.max(0,video.currentTime-10);
   triggerAdsByAction();
@@ -287,18 +282,24 @@ video.addEventListener("timeupdate",()=>{
   seek.max=video.duration||0;
   seek.value=video.currentTime;
 });
-seek.onchange=()=>triggerAdsByAction();
-seek.oninput=()=>video.currentTime=seek.value;
+
+seek.onchange=()=>{
+  video.currentTime=seek.value;
+  triggerAdsByAction();
+};
 
 /* FULLSCREEN */
 fsBtn.onclick=()=>{
   document.body.classList.toggle("browser-fs");
   fsBtn.textContent=document.body.classList.contains("browser-fs")?"Exit":"Fullscreen";
-  triggerAdsByAction();
 };
+
+/* ENTER + EXIT FULLSCREEN TRIGGER */
+document.addEventListener("fullscreenchange",triggerAdsByAction);
 
 /* ROUTER */
 let VIDEOS=[],page=1;
+
 function getId(){
   const m=location.hash.match(/^#\/e\/([\w]+)/);
   return m?m[1]:null;
@@ -308,6 +309,20 @@ function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
 function renderHome(){
   list.innerHTML="";
   shuffle(VIDEOS).slice((page-1)*12,page*12).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=`/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function renderRecommend(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice(0,6).forEach(v=>{
     const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
@@ -335,27 +350,22 @@ function route(){
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v) return;
 
-  overlayOnce=true;
-  lastAdsAction=0;
-
+  adBanner.style.display="none";
   playerBox.style.display="block";
   titleEl.style.display="block";
   pagination.style.display="none";
   titleEl.textContent=v.title;
   video.src=`https://cdn.videy.co/${id}.mp4`;
-  startBannerTimer();
+  renderRecommend();
 }
 
 prevBtn.onclick=()=>{if(page>1){page--;renderHome();}};
 nextBtn.onclick=()=>{if(page*12<VIDEOS.length){page++;renderHome();}};
 
-fetch(API_JSON)
-  .then(r=>r.json())
-  .then(j=>{
-    VIDEOS=j.videos;
-    route();
-  });
-
+fetch(API_JSON).then(r=>r.json()).then(j=>{
+  VIDEOS=j.videos;
+  route();
+});
 window.addEventListener("hashchange",route);
 </script>
 
