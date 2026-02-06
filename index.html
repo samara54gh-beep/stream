@@ -33,17 +33,12 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
   position:relative;
 }
 .video-box{position:relative;width:100%;aspect-ratio:16/9}
-video{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  background:#000;
-}
+video{width:100%;height:100%;object-fit:contain;background:#000}
 
-/* TAP OVERLAY */
+/* OVERLAY PLAY */
 #tapOverlay{
   position:absolute;inset:0;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
   font-size:64px;
@@ -99,32 +94,59 @@ video{
 }
 
 /* GRID */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
-.card{background:#12121a;border-radius:14px;cursor:pointer;overflow:hidden}
-.thumb{padding-top:56.25%;background:#000;position:relative}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+}
+.card{
+  background:#12121a;
+  border-radius:14px;
+  cursor:pointer;
+  overflow:hidden;
+}
+.thumb{
+  padding-top:56.25%;
+  background:#000;
+  position:relative;
+}
 .thumb::after{
-  content:"VIDEY";
+  content:"VIDEO";
   position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  color:var(--accent)
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent);
+  font-weight:700;
 }
 .info{padding:10px}
-.title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title{
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
 /* PAGINATION */
-.pagination{display:flex;justify-content:center;gap:10px;margin:16px 0}
+.pagination{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:16px 0;
+}
 .pagination button{
   padding:6px 12px;
   background:var(--accent);
-  border:none;color:#fff;
+  border:none;
+  color:#fff;
   border-radius:6px;
-  cursor:pointer
+  cursor:pointer;
 }
 
 /* FOOTER */
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* ===== CUSTOM FULLSCREEN (HP SAFE) ===== */
+/* ===== BROWSER FULLSCREEN (FINAL) ===== */
 body.browser-fs{overflow:hidden}
 body.browser-fs header,
 body.browser-fs footer,
@@ -142,7 +164,7 @@ body.browser-fs .player{
   position:fixed;
   inset:0;
   width:100vw;
-  height:calc(var(--vh) * 100);
+  height:calc(var(--vh)*100);
   margin:0;
   border-radius:0;
   z-index:9999;
@@ -205,13 +227,18 @@ body.browser-fs .seek{
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-/* FIX VH HP */
+/* FIX REAL VH HP */
 function setVH(){
-  document.documentElement.style.setProperty('--vh', `${window.innerHeight*0.01}px`);
+  document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);
 }
 setVH();
 window.addEventListener('resize',setVH);
 window.addEventListener('orientationchange',setVH);
+
+/* CONFIG */
+const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
+const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
+const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
 /* ELEMENTS */
 const video=document.getElementById("video");
@@ -223,54 +250,151 @@ const seek=document.getElementById("seek");
 const fsBtn=document.getElementById("fsBtn");
 const playerBox=document.getElementById("playerBox");
 const adBanner=document.getElementById("adBanner");
+const titleEl=document.getElementById("videoTitle");
+const list=document.getElementById("videos");
+const prevBtn=document.getElementById("prevBtn");
+const nextBtn=document.getElementById("nextBtn");
+const pagination=document.querySelector(".pagination");
 
-/* ADS */
-const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 adBanner.href=AD_LINK;
-adBanner.innerHTML='<img src="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg">';
+adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-let adsTimer=null;
+/* STATE */
+let VIDEOS=[],page=1,adsTimer=null;
+let adsOverlayOnce=true,firstPlay=true;
 
-/* BANNER TIMER */
-function startAds(){
+/* ADS TIMER */
+function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
-    if(video.paused) return;
+    if(video.paused||document.hidden) return;
     adBanner.style.display="block";
   },25000);
 }
-adBanner.onclick=()=>adBanner.style.display="none";
-
-/* VIDEO */
-tapOverlay.onclick=()=>{
+adBanner.onclick=()=>{
+  adBanner.style.display="none";
   window.open(AD_LINK,"_blank");
+};
+
+/* OVERLAY */
+tapOverlay.onclick=()=>{
+  if(adsOverlayOnce){
+    adsOverlayOnce=false;
+    window.open(AD_LINK,"_blank");
+  }
   video.play();
 };
-video.onplay=()=>{
-  tapOverlay.style.display="none";
-  playPause.textContent="⏸ Pause";
-  startAds();
-};
-video.onpause=()=>{
+video.addEventListener("loadedmetadata",()=>{
   tapOverlay.style.display="flex";
   playPause.textContent="▶ Play";
-};
+});
+video.addEventListener("pause",()=>{
+  tapOverlay.style.display="flex";
+  playPause.textContent="▶ Play";
+});
+video.addEventListener("play",()=>{
+  tapOverlay.style.display="none";
+  playPause.textContent="⏸ Pause";
+  startAdsTimer();
+  if(firstPlay && adsOverlayOnce){
+    firstPlay=false;
+    adsOverlayOnce=false;
+    window.open(AD_LINK,"_blank");
+  }
+});
 
 /* CONTROLS */
 video.onclick=()=>video.paused?video.play():video.pause();
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
 forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
-video.ontimeupdate=()=>{
+video.addEventListener("timeupdate",()=>{
   seek.max=video.duration||0;
   seek.value=video.currentTime;
-};
+});
 seek.oninput=()=>video.currentTime=seek.value;
 
 /* FULLSCREEN */
 fsBtn.onclick=()=>{
   document.body.classList.toggle("browser-fs");
-  fsBtn.textContent=document.body.classList.contains("browser-fs")?"Exit":"Fullscreen";
+  fsBtn.textContent=document.body.classList.contains("browser-fs")
+    ?"Exit":"Fullscreen";
 };
+
+/* ROUTER */
+function getId(){
+  const m=location.hash.match(/^#\/e\/([\w]+)/);
+  return m?m[1]:null;
+}
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+
+function renderHome(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice((page-1)*12,page*12).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=`/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function renderRecommend(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice(0,6).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=`/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function route(){
+  const id=getId();
+  if(!id){
+    clearInterval(adsTimer);
+    adBanner.style.display="none";
+    document.body.classList.remove("browser-fs");
+    fsBtn.textContent="Fullscreen";
+    playerBox.style.display="none";
+    titleEl.style.display="none";
+    pagination.style.display="flex";
+    renderHome();
+    return;
+  }
+
+  const v=VIDEOS.find(x=>x.embed===id);
+  if(!v) return;
+
+  adsOverlayOnce=true;
+  firstPlay=true;
+  adBanner.style.display="none";
+
+  playerBox.style.display="block";
+  titleEl.style.display="block";
+  pagination.style.display="none";
+  titleEl.textContent=v.title;
+  video.src=`https://cdn.videy.co/${id}.mp4`;
+  renderRecommend();
+}
+
+prevBtn.onclick=()=>{if(page>1){page--;renderHome();}};
+nextBtn.onclick=()=>{if(page*12<VIDEOS.length){page++;renderHome();}};
+
+fetch(API_JSON)
+  .then(r=>r.json())
+  .then(j=>{
+    VIDEOS=j.videos;
+    route();
+  });
+
+window.addEventListener("hashchange",route);
 </script>
 
 </body>
