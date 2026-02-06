@@ -35,7 +35,7 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 .video-box{position:relative;width:100%;aspect-ratio:16/9}
 video{width:100%;height:100%;object-fit:contain;background:#000}
 
-/* OVERLAY */
+/* TAP OVERLAY */
 #tapOverlay{
   position:absolute;inset:0;
   display:none;
@@ -61,7 +61,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
   cursor:pointer;
 }
 
-/* ADS */
+/* ADS BANNER */
 #adBanner{
   position:absolute;
   top:12px;left:50%;
@@ -101,7 +101,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
   content:"VIDEO";
   position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
-  color:#e50914;font-weight:700
+  color:var(--accent);font-weight:700
 }
 .info{padding:10px}
 .title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -110,7 +110,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 .pagination{display:flex;justify-content:center;gap:10px;margin:16px 0}
 .pagination button{
   padding:6px 12px;
-  background:#e50914;
+  background:var(--accent);
   border:none;color:#fff;
   border-radius:6px;
   cursor:pointer
@@ -119,13 +119,15 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 /* FOOTER */
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* FULLSCREEN MODE */
+/* BROWSER FULLSCREEN MODE */
 body.browser-fs{overflow:hidden}
 body.browser-fs header,
 body.browser-fs footer,
 body.browser-fs .pagination,
 body.browser-fs #videos,
-body.browser-fs .video-title{display:none!important}
+body.browser-fs .video-title{
+  display:none!important;
+}
 body.browser-fs .container{padding:0;max-width:none}
 body.browser-fs .player{
   display:block;
@@ -137,6 +139,8 @@ body.browser-fs .player{
   border-radius:0;
   z-index:9999;
 }
+body.browser-fs .video-box,
+body.browser-fs video{width:100%;height:100%}
 body.browser-fs .controls{
   position:absolute;
   bottom:0;left:0;right:0;
@@ -195,36 +199,44 @@ function setVH(){
   document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);
 }
 setVH();
-addEventListener('resize',setVH);
-addEventListener('orientationchange',setVH);
+window.addEventListener('resize',setVH);
+window.addEventListener('orientationchange',setVH);
 
 /* CONFIG */
 const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
 const AD_LINK="https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
 const BANNER_IMG="https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
-/* ELEMENT */
-const video=video;
-const adBanner=document.getElementById("adBanner");
-const fsBtn=document.getElementById("fsBtn");
-const seek=document.getElementById("seek");
+/* ELEMENTS */
+const video=document.getElementById("video");
+const tapOverlay=document.getElementById("tapOverlay");
+const playPause=document.getElementById("playPause");
 const back10=document.getElementById("back10");
 const forward10=document.getElementById("forward10");
-const playPause=document.getElementById("playPause");
-const tapOverlay=document.getElementById("tapOverlay");
+const seek=document.getElementById("seek");
+const fsBtn=document.getElementById("fsBtn");
+const playerBox=document.getElementById("playerBox");
+const adBanner=document.getElementById("adBanner");
+const titleEl=document.getElementById("videoTitle");
+const list=document.getElementById("videos");
+const prevBtn=document.getElementById("prevBtn");
+const nextBtn=document.getElementById("nextBtn");
+const pagination=document.querySelector(".pagination");
 
 adBanner.href=AD_LINK;
 adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 
-/* ===== ADS CORE ===== */
+/* ADS SYSTEM */
 const ADS_COOLDOWN=25000;
-let lastAdsAction=Date.now(); // 🔒 block detik 0
+let lastAdsAction=0;
 
 function triggerAds(){
   const now=Date.now();
   if(now-lastAdsAction<ADS_COOLDOWN) return;
   lastAdsAction=now;
   adBanner.style.display="block";
+  adBanner.style.opacity="0";
+  requestAnimationFrame(()=>adBanner.style.opacity="1");
 }
 
 adBanner.onclick=()=>{
@@ -232,47 +244,107 @@ adBanner.onclick=()=>{
   window.open(AD_LINK,"_blank");
 };
 
-/* PLAYER */
-tapOverlay.onclick=()=>video.play();
+/* VIDEO EVENTS */
+tapOverlay.onclick=()=>{
+  triggerAds();
+  video.play();
+};
 
-video.onplay=()=>{
+video.addEventListener("loadedmetadata",()=>{
+  lastAdsAction=Date.now(); // detik 0 aman
+  tapOverlay.style.display="flex";
+});
+
+video.addEventListener("play",()=>{
   tapOverlay.style.display="none";
   playPause.textContent="⏸ Pause";
-};
-video.onpause=()=>{
+});
+video.addEventListener("pause",()=>{
   tapOverlay.style.display="flex";
   playPause.textContent="▶ Play";
-};
+});
 
-playPause.onclick=()=>video.paused?video.play():video.pause();
+video.onclick=()=>video.paused?video.play():video.pause();
 
-/* SEEK + SKIP → ADS */
-seek.oninput=()=>{
-  video.currentTime=seek.value;
-  triggerAds();
-};
+back10.onclick=()=>{video.currentTime=Math.max(0,video.currentTime-10);triggerAds();}
+forward10.onclick=()=>{video.currentTime=Math.min(video.duration,video.currentTime+10);triggerAds();}
 
-back10.onclick=()=>{
-  video.currentTime=Math.max(0,video.currentTime-10);
-  triggerAds();
-};
-
-forward10.onclick=()=>{
-  video.currentTime=Math.min(video.duration,video.currentTime+10);
-  triggerAds();
-};
-
-video.ontimeupdate=()=>{
+video.addEventListener("timeupdate",()=>{
   seek.max=video.duration||0;
   seek.value=video.currentTime;
-};
+});
 
-/* FULLSCREEN → ADS */
+seek.onchange=()=>{video.currentTime=seek.value;triggerAds();}
+
+/* FULLSCREEN */
 fsBtn.onclick=()=>{
-  const fs=document.body.classList.toggle("browser-fs");
-  fsBtn.textContent=fs?"Exit":"Fullscreen";
+  document.body.classList.toggle("browser-fs");
+  fsBtn.textContent=document.body.classList.contains("browser-fs")?"Exit":"Fullscreen";
   triggerAds();
 };
+
+/* ROUTER */
+let VIDEOS=[],page=1;
+const shuffle=a=>a.slice().sort(()=>Math.random()-0.5);
+
+function renderHome(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice((page-1)*12,page*12).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=`/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function renderRecommend(){
+  list.innerHTML="";
+  shuffle(VIDEOS).slice(0,6).forEach(v=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="thumb"></div><div class="info"><div class="title">${v.title}</div></div>`;
+    c.onclick=()=>{
+      window.open(AD_LINK,"_blank");
+      location.href=`/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function route(){
+  const m=location.hash.match(/^#\/e\/([\w]+)/);
+  if(!m){
+    playerBox.style.display="none";
+    titleEl.style.display="none";
+    pagination.style.display="flex";
+    renderHome();
+    return;
+  }
+  const v=VIDEOS.find(x=>x.embed===m[1]);
+  if(!v) return;
+  playerBox.style.display="block";
+  titleEl.style.display="block";
+  pagination.style.display="none";
+  titleEl.textContent=v.title;
+  video.src=`https://cdn.videy.co/${v.embed}.mp4`;
+  renderRecommend();
+}
+
+prevBtn.onclick=()=>{if(page>1){page--;renderHome();}};
+nextBtn.onclick=()=>{if(page*12<VIDEOS.length){page++;renderHome();}};
+
+fetch(API_JSON)
+.then(r=>r.json())
+.then(j=>{
+  VIDEOS=j.videos;
+  renderHome();
+});
+
+window.addEventListener("hashchange",route);
 </script>
 
 </body>
