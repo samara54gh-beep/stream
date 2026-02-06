@@ -13,7 +13,11 @@
   --vh:1vh;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:system-ui;
+  overscroll-behavior:none;
+}
 
 /* HEADER */
 header{background:#000;border-bottom:1px solid #1f1f2a}
@@ -26,7 +30,12 @@ header{background:#000;border-bottom:1px solid #1f1f2a}
 /* PLAYER */
 .player{display:none;background:#000;border-radius:16px;overflow:hidden;margin-bottom:12px;position:relative}
 .video-box{position:relative;width:100%;aspect-ratio:16/9}
-video{width:100%;height:100%;object-fit:contain;background:#000}
+video{
+  width:100%;height:100%;
+  background:#000;
+  object-fit:contain;
+  touch-action:manipulation;
+}
 
 /* OVERLAY PLAY */
 #tapOverlay{
@@ -89,6 +98,7 @@ body.browser-fs footer,
 body.browser-fs .pagination,
 body.browser-fs #videos,
 body.browser-fs .video-title{display:none!important}
+
 body.browser-fs .container{padding:0;max-width:none}
 body.browser-fs .player{
   display:block;position:fixed;inset:0;
@@ -97,6 +107,12 @@ body.browser-fs .player{
 }
 body.browser-fs .controls{position:absolute;bottom:0;left:0;right:0}
 body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0}
+
+/* ===== OPSI 3 : AUTO ORIENTATION ===== */
+body.browser-fs video{object-fit:contain}
+@media (orientation: portrait){
+  body.browser-fs video{object-fit:cover}
+}
 </style>
 </head>
 
@@ -145,7 +161,9 @@ body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0}
 function setVH(){
   document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);
 }
-setVH();window.addEventListener('resize',setVH);window.addEventListener('orientationchange',setVH);
+setVH();
+window.addEventListener('resize',setVH);
+window.addEventListener('orientationchange',setVH);
 
 /* CONFIG */
 const API_JSON=atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JhbXNhdDE4OC9saXN0YXBpL21haW4vdmlkZW9zLmpzb24=");
@@ -182,29 +200,25 @@ function showBanner(){
   bannerVisible=true;
   adBanner.style.display="block";
 }
-
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
     if(video.paused||document.hidden) return;
     showBanner();
-  },25000); // 25 detik
+  },25000);
 }
-
 adBanner.onclick=()=>{
   bannerVisible=false;
   adBanner.style.display="none";
   window.open(AD_LINK,"_blank");
 };
 
-/* OVERLAY */
-tapOverlay.onclick=()=>{
-  if(adsOverlayOnce){
-    adsOverlayOnce=false;
-    window.open(AD_LINK,"_blank");
-  }
-  video.play();
-};
+/* PLAY LOGIC (HP SAFE) */
+function playVideo(){
+  video.play().catch(()=>{});
+}
+tapOverlay.onclick=playVideo;
+video.onclick=()=>video.paused?playVideo():video.pause();
 
 video.addEventListener("loadedmetadata",()=>{
   tapOverlay.style.display="flex";
@@ -225,11 +239,11 @@ video.addEventListener("play",()=>{
 });
 
 /* CONTROLS */
-video.onclick=()=>video.paused?video.play():video.pause();
 back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
 forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
 video.addEventListener("timeupdate",()=>{
-  seek.max=video.duration||0;seek.value=video.currentTime;
+  seek.max=video.duration||0;
+  seek.value=video.currentTime;
 });
 seek.oninput=()=>video.currentTime=seek.value;
 
@@ -288,7 +302,6 @@ function route(){
     renderHome();
     return;
   }
-
   const v=VIDEOS.find(x=>x.embed===id);
   if(!v) return;
 
