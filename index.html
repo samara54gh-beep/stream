@@ -146,15 +146,13 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 /* FOOTER */
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
-/* ===== BROWSER FULLSCREEN ===== */
+/* BROWSER FULLSCREEN */
 body.browser-fs{overflow:hidden}
 body.browser-fs header,
 body.browser-fs footer,
 body.browser-fs .pagination,
 body.browser-fs #videos,
-body.browser-fs .video-title{
-  display:none!important;
-}
+body.browser-fs .video-title{display:none!important}
 body.browser-fs .container{padding:0;max-width:none}
 body.browser-fs .player{
   display:block;
@@ -168,15 +166,8 @@ body.browser-fs .player{
 }
 body.browser-fs .video-box,
 body.browser-fs video{width:100%;height:100%}
-body.browser-fs .controls{
-  position:absolute;
-  bottom:0;left:0;right:0;
-}
-body.browser-fs .seek{
-  position:absolute;
-  bottom:56px;
-  left:0;right:0;
-}
+body.browser-fs .controls{position:absolute;bottom:0;left:0;right:0}
+body.browser-fs .seek{position:absolute;bottom:56px;left:0;right:0}
 </style>
 </head>
 
@@ -221,7 +212,7 @@ body.browser-fs .seek{
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
-/* FIX REAL VH HP */
+/* VH FIX */
 function setVH(){
   document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);
 }
@@ -256,8 +247,9 @@ adBanner.innerHTML=`<img src="${BANNER_IMG}">`;
 /* STATE */
 let VIDEOS=[],page=1,adsTimer=null;
 let adsOverlayOnce=true,firstPlay=true;
+let lastBtnAdsTime=0;
 
-/* ADS TIMER */
+/* ADS BANNER 30s */
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer=setInterval(()=>{
@@ -269,6 +261,14 @@ adBanner.onclick=()=>{
   adBanner.style.display="none";
   window.open(AD_LINK,"_blank");
 };
+
+/* ADS TOMBOL 25s */
+function hookButtonAds(){
+  const now=Date.now();
+  if(now-lastBtnAdsTime<25000) return;
+  lastBtnAdsTime=now;
+  window.open(AD_LINK,"_blank");
+}
 
 /* OVERLAY */
 tapOverlay.onclick=()=>{
@@ -297,10 +297,20 @@ video.addEventListener("play",()=>{
   }
 });
 
-/* CONTROLS */
-video.onclick=()=>video.paused?video.play():video.pause();
-back10.onclick=()=>video.currentTime=Math.max(0,video.currentTime-10);
-forward10.onclick=()=>video.currentTime=Math.min(video.duration,video.currentTime+10);
+/* CONTROLS + ADS HOOK */
+back10.onclick=()=>{
+  hookButtonAds();
+  video.currentTime=Math.max(0,video.currentTime-10);
+};
+forward10.onclick=()=>{
+  hookButtonAds();
+  video.currentTime=Math.min(video.duration,video.currentTime+10);
+};
+video.onclick=()=>{
+  hookButtonAds();
+  video.paused?video.play():video.pause();
+};
+
 video.addEventListener("timeupdate",()=>{
   seek.max=video.duration||0;
   seek.value=video.currentTime;
@@ -309,9 +319,9 @@ seek.oninput=()=>video.currentTime=seek.value;
 
 /* FULLSCREEN */
 fsBtn.onclick=()=>{
+  hookButtonAds();
   document.body.classList.toggle("browser-fs");
-  fsBtn.textContent=document.body.classList.contains("browser-fs")
-    ?"Exit":"Fullscreen";
+  fsBtn.textContent=document.body.classList.contains("browser-fs")?"Exit":"Fullscreen";
 };
 
 /* ROUTER */
@@ -368,6 +378,7 @@ function route(){
 
   adsOverlayOnce=true;
   firstPlay=true;
+  lastBtnAdsTime=0;
   adBanner.style.display="none";
 
   playerBox.style.display="block";
@@ -381,11 +392,10 @@ function route(){
 prevBtn.onclick=()=>{if(page>1){page--;renderHome();}};
 nextBtn.onclick=()=>{if(page*12<VIDEOS.length){page++;renderHome();}};
 
-/* === FIX LIST VIDEO (SATU-SATUNYA PERUBAHAN) === */
 fetch(API_JSON)
   .then(r=>r.json())
   .then(j=>{
-    VIDEOS = Array.isArray(j) ? j : (j.videos || []);
+    VIDEOS=Array.isArray(j)?j:(j.videos||[]);
     route();
   });
 
