@@ -159,12 +159,19 @@ body.browser-fs .seek{
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
+function setVH(){
+  document.documentElement.style.setProperty(
+    '--vh', `${window.innerHeight * 0.01}px`
+  );
+}
+setVH();
+window.addEventListener('resize', setVH);
+window.addEventListener('orientationchange', setVH);
 
 const API_JSON = "https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
-
-const AD_LINK  = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57"; // ADSTERRA
-const SHOPEE_LINK = "https://shope.ee/ISI_LINK_AFFILIATE_KAMU"; // GANTI INI
-const BANNER_IMG = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8scNWBfO9LSP9we_JcQDXedWFlGqC9J3x8g&s"; // GANTI GAMBAR KAOS
+const AD_LINK  = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
+const SHOPEE_LINK = "https://shope.ee/ISI_LINK_AFFILIATE_KAMU"; // <-- GANTI INI
+const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
 const video      = document.getElementById("video");
 const tapOverlay = document.getElementById("tapOverlay");
@@ -181,17 +188,198 @@ const prevBtn    = document.getElementById("prevBtn");
 const nextBtn    = document.getElementById("nextBtn");
 const pagination = document.querySelector(".pagination");
 
+// ===== BANNER KE SHOPEE =====
 adBanner.href = SHOPEE_LINK;
 adBanner.innerHTML = `<img src="${BANNER_IMG}">`;
+
+let VIDEOS = [];
+let page = 1;
+let adsTimer = null;
+let adsOverlayOnce = true;
+let firstPlay = true;
+let lastBtnAdsTime = 0;
+
+function startAdsTimer(){
+  clearInterval(adsTimer);
+  adsTimer = setInterval(()=>{
+    if(video.paused || document.hidden) return;
+    adBanner.style.display = "block";
+  }, 40000);
+}
 
 adBanner.onclick = ()=>{
   adBanner.style.display = "none";
   window.open(SHOPEE_LINK, "_blank");
 };
 
-// SEMUA LOGIC LAIN TETAP SAMA DAN TIDAK DIUBAH
-// (Popunder & redirect tetap pakai AD_LINK)
+function hookButtonAds(){
+  const now = Date.now();
+  if(now - lastBtnAdsTime < 25000) return;
+  lastBtnAdsTime = now;
+  window.open(AD_LINK, "_blank");
+}
 
+tapOverlay.onclick = ()=>{
+  if(adsOverlayOnce){
+    adsOverlayOnce = false;
+    window.open(AD_LINK, "_blank");
+  }
+  video.play();
+};
+
+video.addEventListener("loadedmetadata", ()=>{
+  tapOverlay.style.display = "flex";
+  playPause.textContent = "▶ Play";
+});
+
+video.addEventListener("pause", ()=>{
+  tapOverlay.style.display = "flex";
+  playPause.textContent = "▶ Play";
+});
+
+video.addEventListener("play", ()=>{
+  tapOverlay.style.display = "none";
+  playPause.textContent = "⏸ Pause";
+  startAdsTimer();
+  if(firstPlay && adsOverlayOnce){
+    firstPlay = false;
+    adsOverlayOnce = false;
+    window.open(AD_LINK, "_blank");
+  }
+});
+
+back10.onclick = ()=>{
+  hookButtonAds();
+  video.currentTime = Math.max(0, video.currentTime - 10);
+};
+
+forward10.onclick = ()=>{
+  hookButtonAds();
+  video.currentTime = Math.min(video.duration, video.currentTime + 10);
+};
+
+video.onclick = ()=>{
+  hookButtonAds();
+  video.paused ? video.play() : video.pause();
+};
+
+video.addEventListener("timeupdate", ()=>{
+  seek.max = video.duration || 0;
+  seek.value = video.currentTime;
+});
+
+seek.oninput = ()=>{
+  video.currentTime = seek.value;
+};
+
+seek.addEventListener("change", ()=>{
+  hookButtonAds();
+});
+
+fsBtn.onclick = ()=>{
+  hookButtonAds();
+  document.body.classList.toggle("browser-fs");
+  fsBtn.textContent = document.body.classList.contains("browser-fs")
+    ? "Exit"
+    : "Fullscreen";
+};
+
+function getId(){
+  const m = location.hash.match(/^#\/e\/([\w]+)/);
+  return m ? m[1] : null;
+}
+
+function shuffle(a){
+  return a.slice().sort(()=>Math.random() - 0.5);
+}
+
+function renderHome(){
+  list.innerHTML = "";
+  shuffle(VIDEOS).slice((page-1)*12, page*12).forEach(v=>{
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `
+      <div class="thumb"></div>
+      <div class="info">
+        <div class="title">${v.title}</div>
+      </div>
+    `;
+    c.onclick = ()=>{
+      window.open(AD_LINK, "_blank");
+      location.href = `/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function renderRecommend(){
+  list.innerHTML = "";
+  shuffle(VIDEOS).slice(0,6).forEach(v=>{
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `
+      <div class="thumb"></div>
+      <div class="info">
+        <div class="title">${v.title}</div>
+      </div>
+    `;
+    c.onclick = ()=>{
+      window.open(AD_LINK, "_blank");
+      location.href = `/#/e/${v.embed}`;
+    };
+    list.appendChild(c);
+  });
+}
+
+function route(){
+  const id = getId();
+  if(!id){
+    clearInterval(adsTimer);
+    adBanner.style.display = "none";
+    document.body.classList.remove("browser-fs");
+    fsBtn.textContent = "Fullscreen";
+    playerBox.style.display = "none";
+    titleEl.style.display = "none";
+    pagination.style.display = "flex";
+    renderHome();
+    return;
+  }
+  const v = VIDEOS.find(x=>x.embed===id);
+  if(!v) return;
+  adsOverlayOnce = true;
+  firstPlay = true;
+  lastBtnAdsTime = 0;
+  adBanner.style.display = "none";
+  playerBox.style.display = "block";
+  titleEl.style.display = "block";
+  pagination.style.display = "none";
+  titleEl.textContent = v.title;
+  video.src = `https://cdn.videy.co/${id}.mp4`;
+  renderRecommend();
+}
+
+prevBtn.onclick = ()=>{
+  if(page > 1){
+    page--;
+    renderHome();
+  }
+};
+
+nextBtn.onclick = ()=>{
+  if(page * 12 < VIDEOS.length){
+    page++;
+    renderHome();
+  }
+};
+
+fetch(API_JSON)
+  .then(r=>r.json())
+  .then(j=>{
+    VIDEOS = Array.isArray(j) ? j : (j.videos || []);
+    route();
+  });
+
+window.addEventListener("hashchange", route);
 </script>
 
 </body>
