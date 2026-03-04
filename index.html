@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -93,6 +94,7 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 
 footer{text-align:center;padding:18px;color:#777;font-size:13px}
 
+/* ===== BROWSER FULLSCREEN MODE ===== */
 body.browser-fs{overflow:hidden}
 body.browser-fs header,
 body.browser-fs footer,
@@ -159,6 +161,9 @@ body.browser-fs .seek{
 <footer>© 2026 Powered by Videy</footer>
 
 <script>
+// ===============================
+// FIX VH MOBILE (FULLSCREEN)
+// ===============================
 function setVH(){
   document.documentElement.style.setProperty(
     '--vh', `${window.innerHeight * 0.01}px`
@@ -168,11 +173,18 @@ setVH();
 window.addEventListener('resize', setVH);
 window.addEventListener('orientationchange', setVH);
 
-const API_JSON = "https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json";
-const AD_LINK  = "https://www.effectivegatecpm.com/dvm2zgjx6w?key=40b33d39d469660e445872b4aed08c57";
-const SHOPEE_LINK = "https://shope.ee/ISI_LINK_AFFILIATE_KAMU"; // <-- GANTI INI
-const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg";
 
+// ===============================
+// KONFIGURASI API & IKLAN
+// ===============================
+const API_JSON = "https://raw.githubusercontent.com/bamsat188/listapi/main/videos.json"; // masukan api mu disini
+const AD_LINK  = "https://www.effectivegatecpm.com/kjxz7ytrt?key=8c5e92e18de57c2667a5b9fffc2c6fda"; // masukan ads mu disini
+const BANNER_IMG = "https://shopee.co.id/inspirasi-shopee/wp-content/uploads/2020/08/Kampus-Shopee-Inspirasi-Shopee-Blog-Header.jpg"; // masukan gambar banner mu disini
+
+
+// ===============================
+// DOM ELEMENT
+// ===============================
 const video      = document.getElementById("video");
 const tapOverlay = document.getElementById("tapOverlay");
 const playPause  = document.getElementById("playPause");
@@ -188,17 +200,29 @@ const prevBtn    = document.getElementById("prevBtn");
 const nextBtn    = document.getElementById("nextBtn");
 const pagination = document.querySelector(".pagination");
 
-// ===== BANNER KE SHOPEE =====
-adBanner.href = SHOPEE_LINK;
+
+// ===============================
+// SETUP BANNER IKLAN
+// ===============================
+adBanner.href = AD_LINK;
 adBanner.innerHTML = `<img src="${BANNER_IMG}">`;
 
+
+// ===============================
+// STATE
+// ===============================
 let VIDEOS = [];
 let page = 1;
 let adsTimer = null;
+
 let adsOverlayOnce = true;
 let firstPlay = true;
 let lastBtnAdsTime = 0;
 
+
+// ===============================
+// TIMER IKLAN BERDASARKAN WAKTU
+// ===============================
 function startAdsTimer(){
   clearInterval(adsTimer);
   adsTimer = setInterval(()=>{
@@ -209,9 +233,13 @@ function startAdsTimer(){
 
 adBanner.onclick = ()=>{
   adBanner.style.display = "none";
-  window.open(SHOPEE_LINK, "_blank");
+  window.open(AD_LINK, "_blank");
 };
 
+
+// ===============================
+// IKLAN SAAT TOMBOL
+// ===============================
 function hookButtonAds(){
   const now = Date.now();
   if(now - lastBtnAdsTime < 25000) return;
@@ -219,6 +247,10 @@ function hookButtonAds(){
   window.open(AD_LINK, "_blank");
 }
 
+
+// ===============================
+// TAP OVERLAY
+// ===============================
 tapOverlay.onclick = ()=>{
   if(adsOverlayOnce){
     adsOverlayOnce = false;
@@ -227,6 +259,10 @@ tapOverlay.onclick = ()=>{
   video.play();
 };
 
+
+// ===============================
+// EVENT VIDEO
+// ===============================
 video.addEventListener("loadedmetadata", ()=>{
   tapOverlay.style.display = "flex";
   playPause.textContent = "▶ Play";
@@ -241,6 +277,7 @@ video.addEventListener("play", ()=>{
   tapOverlay.style.display = "none";
   playPause.textContent = "⏸ Pause";
   startAdsTimer();
+
   if(firstPlay && adsOverlayOnce){
     firstPlay = false;
     adsOverlayOnce = false;
@@ -248,6 +285,10 @@ video.addEventListener("play", ()=>{
   }
 });
 
+
+// ===============================
+// KONTROL VIDEO
+// ===============================
 back10.onclick = ()=>{
   hookButtonAds();
   video.currentTime = Math.max(0, video.currentTime - 10);
@@ -263,6 +304,10 @@ video.onclick = ()=>{
   video.paused ? video.play() : video.pause();
 };
 
+
+// ===============================
+// SEEK BAR
+// ===============================
 video.addEventListener("timeupdate", ()=>{
   seek.max = video.duration || 0;
   seek.value = video.currentTime;
@@ -276,6 +321,10 @@ seek.addEventListener("change", ()=>{
   hookButtonAds();
 });
 
+
+// ===============================
+// FULLSCREEN BROWSER
+// ===============================
 fsBtn.onclick = ()=>{
   hookButtonAds();
   document.body.classList.toggle("browser-fs");
@@ -284,6 +333,10 @@ fsBtn.onclick = ()=>{
     : "Fullscreen";
 };
 
+
+// ===============================
+// ROUTER
+// ===============================
 function getId(){
   const m = location.hash.match(/^#\/e\/([\w]+)/);
   return m ? m[1] : null;
@@ -293,6 +346,10 @@ function shuffle(a){
   return a.slice().sort(()=>Math.random() - 0.5);
 }
 
+
+// ===============================
+// RENDER HOME
+// ===============================
 function renderHome(){
   list.innerHTML = "";
   shuffle(VIDEOS).slice((page-1)*12, page*12).forEach(v=>{
@@ -312,6 +369,10 @@ function renderHome(){
   });
 }
 
+
+// ===============================
+// RENDER REKOMENDASI
+// ===============================
 function renderRecommend(){
   list.innerHTML = "";
   shuffle(VIDEOS).slice(0,6).forEach(v=>{
@@ -331,33 +392,49 @@ function renderRecommend(){
   });
 }
 
+
+// ===============================
+// ROUTE HANDLER
+// ===============================
 function route(){
   const id = getId();
+
   if(!id){
     clearInterval(adsTimer);
     adBanner.style.display = "none";
     document.body.classList.remove("browser-fs");
     fsBtn.textContent = "Fullscreen";
+
     playerBox.style.display = "none";
     titleEl.style.display = "none";
     pagination.style.display = "flex";
+
     renderHome();
     return;
   }
+
   const v = VIDEOS.find(x=>x.embed===id);
   if(!v) return;
+
   adsOverlayOnce = true;
   firstPlay = true;
   lastBtnAdsTime = 0;
   adBanner.style.display = "none";
+
   playerBox.style.display = "block";
   titleEl.style.display = "block";
   pagination.style.display = "none";
+
   titleEl.textContent = v.title;
   video.src = `https://cdn.videy.co/${id}.mp4`;
+
   renderRecommend();
 }
 
+
+// ===============================
+// PAGINATION
+// ===============================
 prevBtn.onclick = ()=>{
   if(page > 1){
     page--;
@@ -372,6 +449,10 @@ nextBtn.onclick = ()=>{
   }
 };
 
+
+// ===============================
+// LOAD DATA
+// ===============================
 fetch(API_JSON)
   .then(r=>r.json())
   .then(j=>{
@@ -381,6 +462,60 @@ fetch(API_JSON)
 
 window.addEventListener("hashchange", route);
 </script>
+ <!-- Histats.com  START  (aync)-->
+<script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,5005360,4,0,0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('//s10.histats.com/js15_as.js');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="//sstatic1.histats.com/0.gif?5005360&101" alt="" border="0"></a></noscript>
+<!-- Histats.com  END  -->
+  <style>
+/* FLOATING POPUP BUTTON */
+#floatAds{
+position:fixed;
+right:18px;
+bottom:90px;
+width:65px;
+height:65px;
+background:#FFC107;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 5px 18px rgba(0,0,0,.4);
+cursor:pointer;
+z-index:999999;
+animation:floatPulse 2s infinite;
+}
 
+#floatAds img{
+width:34px;
+height:34px;
+}
+
+/* animasi biar menarik */
+@keyframes floatPulse{
+0%{transform:scale(1)}
+50%{transform:scale(1.1)}
+100%{transform:scale(1)}
+}
+</style>
+
+<div id="floatAds">
+<img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+</div>
+
+<script>
+const floatAds = document.getElementById("floatAds");
+
+floatAds.onclick = ()=>{
+window.open(AD_LINK,"_blank");
+};
+</script>
 </body>
 </html>
